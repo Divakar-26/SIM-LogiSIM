@@ -9,6 +9,8 @@ function Workspace({ nodes, setNodes }) {
 
     const [wires, setWires] = useState([]);
     const [activeWire, setActiveWire] = useState(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
     const updateNodePosition = (id, x, y) => {
 
         const snappedX = Math.round(x / grid) * grid;
@@ -57,28 +59,6 @@ function Workspace({ nodes, setNodes }) {
         setActiveWire(null);
     };
 
-    const handleMouseDown = (e) => {
-
-        const rect = workspaceRef.current.getBoundingClientRect();
-
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        setOffset({
-            x: mouseX - x,
-            y: mouseY - y
-        });
-
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-    };
-
-    const handleMouseUp = () => {
-        setDragging(false);
-
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-    }
 
     function getPinPosition(node, pin, isOutput) {
 
@@ -97,7 +77,23 @@ function Workspace({ nodes, setNodes }) {
 
     return (
 
-        <div className="workspace" ref={workspaceRef}>
+        <div className="workspace" ref={workspaceRef}
+            onMouseMove={(e) => {
+                const rect = workspaceRef.current.getBoundingClientRect();
+
+                setMousePos({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                });
+
+            }}
+            onMouseUp={(e) => {
+
+                if (activeWire && e.target.classList.contains("workspace")) {
+                    setActiveWire(null);
+                }
+
+            }}>
 
             <svg className="wire-layer">
 
@@ -127,6 +123,24 @@ function Workspace({ nodes, setNodes }) {
                         />
                     );
                 })}
+
+                {activeWire && (() => {
+
+                    const node = nodes.find(n => n.id === activeWire.nodeId);
+                    if (!node) return null;
+
+                    const p = getPinPosition(node, activeWire, true);
+
+                    return (
+                        <Wire
+                            x1={p.x}
+                            y1={p.y}
+                            x2={mousePos.x}
+                            y2={mousePos.y}
+                        />
+                    );
+
+                })()}
 
             </svg>
 

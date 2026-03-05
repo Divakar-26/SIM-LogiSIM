@@ -21,7 +21,32 @@ function Pin({ type, index, total, nodeId, onPinClick }) {
         <div
             className={`pin pin-${side}`}
             style={{ top: `${top}%` }}
-            onMouseDown={handleClick}
+
+            onMouseDown={(e) => {
+                e.stopPropagation();
+
+                if (type === "output") {
+                    onPinClick({
+                        nodeId,
+                        type,
+                        index,
+                        total
+                    });
+                }
+            }}
+
+            onMouseUp={(e) => {
+                e.stopPropagation();
+
+                if (type === "input") {
+                    onPinClick({
+                        nodeId,
+                        type,
+                        index,
+                        total
+                    });
+                }
+            }}
         />
     );
 }
