@@ -1,0 +1,20 @@
+.sidebar {
+  width: 220px;
+  background: #1e1e1e;
+  color: white;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.sidebar-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sidebar-item:hover {
+  background: #444;
+}

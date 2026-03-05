@@ -2,11 +2,12 @@ import { useState, useRef } from "react";
 import '../../styles/workspace.css';
 import Node from "../Node";
 import Wire from "../Wire";
+import { getPinPosition } from "../../utils/pinPosition";
 
 function Workspace({ nodes, setNodes }) {
     const workspaceRef = useRef(null);
     const grid = 20;
-
+    
     const [wires, setWires] = useState([]);
     const [activeWire, setActiveWire] = useState(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -39,6 +40,17 @@ function Workspace({ nodes, setNodes }) {
         // finish wire
         if (activeWire.type === "output" && pin.type === "input") {
 
+            // check if input already connected
+            const alreadyConnected = wires.some(w =>
+                w.to.nodeId === pin.nodeId &&
+                w.to.index === pin.index
+            );
+
+            if (alreadyConnected) {
+                setActiveWire(null);
+                return;
+            }
+
             const newWire = {
                 id: Date.now(),
                 from: {
@@ -59,21 +71,6 @@ function Workspace({ nodes, setNodes }) {
         setActiveWire(null);
     };
 
-
-    function getPinPosition(node, pin, isOutput) {
-
-        const NODE_WIDTH = 80
-        const NODE_HEIGHT = 40
-
-        const spacing = NODE_HEIGHT / (pin.total + 1)
-        const y = node.y + spacing * (pin.index + 1)
-
-        const x = isOutput
-            ? node.x + NODE_WIDTH
-            : node.x
-
-        return { x, y }
-    }
 
     return (
 

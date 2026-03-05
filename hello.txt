@@ -1,0 +1,232 @@
+
+
+
+
+
+function Wire({ x1, y1, x2, y2 }) {
+
+  const midX = x1 + (x2 - x1) / 2;
+  const r = 10;
+
+  const goingDown = y2 > y1;
+
+  const path = goingDown
+    ? `
+      M ${x1} ${y1}
+      L ${midX - r} ${y1}
+      Q ${midX} ${y1} ${midX} ${y1 + r}
+      L ${midX} ${y2 - r}
+      Q ${midX} ${y2} ${midX + r} ${y2}
+      L ${x2} ${y2}
+    `
+    : `
+      M ${x1} ${y1}
+      L ${midX - r} ${y1}
+      Q ${midX} ${y1} ${midX} ${y1 - r}
+      L ${midX} ${y2 + r}
+      Q ${midX} ${y2} ${midX + r} ${y2}
+      L ${x2} ${y2}
+    `;
+
+  return (
+    <path
+      d={path}
+      stroke="white"
+      strokeWidth="2"
+      fill="none"
+      strokeLinecap="round"
+    />
+  );
+}
+
+export default Wire;
+
+import '../styles/Pin.css'
+
+function Pin({ type, index, total, nodeId, onPinClick }) {
+
+    const side = type === "input" ? "input" : "output";
+
+    const spacing = 100 / (total + 1);
+    const top = spacing * (index + 1);
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        onPinClick({
+            nodeId,
+            type,
+            index,
+            total
+        });
+    };
+
+    return (
+        <div
+            className={`pin pin-${side}`}
+            style={{ top: `${top}%` }}
+
+            onMouseDown={(e) => {
+                e.stopPropagation();
+
+                if (type === "output") {
+                    onPinClick({
+                        nodeId,
+                        type,
+                        index,
+                        total
+                    });
+                }
+            }}
+
+            onMouseUp={(e) => {
+                e.stopPropagation();
+
+                if (type === "input") {
+                    onPinClick({
+                        nodeId,
+                        type,
+                        index,
+                        total
+                    });
+                }
+            }}
+        />
+    );
+}
+
+export default Pin;
+
+function Sidebar({addNode}){
+    const items = ["Switch", "LED", "AND", "OR", "NOT"];
+
+    return(
+        <div style={{
+            width: "220px",
+            background: "#1e1e1e",
+            color: "white",
+            padding: "10px",
+            boxSizing: "border-box",
+        }}>
+            <h3>Components</h3>
+            
+            {items.map((item) => (
+            <div key={item} 
+                 onClick={() => addNode(item)}
+                 style={{
+                    padding: "10px",
+                    marginBottom: "8px",
+                    background: "#333",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    textAlign: "center",
+                 }}
+            >
+                {item}
+            </div>))}
+        </div>
+    );
+}
+
+export default Sidebar;
+
+.node {
+  position: absolute;
+  width: 80px;
+  height: 40px;
+
+  border: 1px solid #555;
+  border-radius: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+.node-label {
+  flex: 1;
+  text-align: center;
+}
+
+.pin-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.node-switch {
+  background: #2ecc71;
+}
+
+.node-and {
+  background: #3498db;
+}
+
+.node-or {
+  background: #9b59b6;
+}
+
+.node-not {
+  background: #e67e22;
+}
+
+.node-led {
+  background: #e74c3c;
+}
+
+.pin {
+  width: 10px;
+  height: 10px;
+
+  background: red;
+  border-radius: 50%;
+  border: 2px solid black;
+
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pin:hover {
+  background: white;
+  cursor: pointer;
+}
+
+.pin-input {
+  left: -5px;
+}
+
+.pin-output {
+  right: -5px;
+}
+
+.workspace{
+    flex: 1;
+    position: relative;
+    background-color: #111;
+
+    background-image: 
+        linear-gradient(#2a2a2a 1px, transparent 1px),
+        linear-gradient(90deg, #2a2a2a 1px, transparent 1px);
+
+    background-size: 20px 20px;
+}
+
+.wire-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+i feel like codebase is a little fucked up, how to structure it good, and remove unneceesary things
+POINT OUT EXACTLY WHERE TO CHANGE
+
+
+extract all code and give me each one of them, regardless of cleaning up

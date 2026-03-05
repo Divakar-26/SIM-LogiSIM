@@ -16,3 +16,9 @@
   height: 100%;
   pointer-events: none;
 }
+
+.camera {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

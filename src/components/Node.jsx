@@ -1,23 +1,7 @@
 import { useState } from 'react'
 import '../styles/node.css'
 import Pin from "./Pin";
-
-
-const gateConfig = {
-    SWITCH: { inputs: 0, outputs: 1 },
-    LED: { inputs: 1, outputs: 0 },
-    AND: { inputs: 2, outputs: 1 },
-    OR: { inputs: 2, outputs: 1 },
-    NOT: { inputs: 1, outputs: 1 }
-};
-
-const gateColors = {
-    SWITCH: "#2ecc71",
-    AND: "#3498db",
-    OR: "#9b59b6",
-    NOT: "#e67e22",
-    LED: "#e74c3c"
-};
+import { gateColors, gateConfig } from '../configs/gates';
 
 function Node({ id, type, x, y, updateNodePosition, workspaceRef, onPinClick}) {
 

@@ -1,54 +1,34 @@
-import '../styles/Pin.css'
+import "../styles/Pin.css";
 
 function Pin({ type, index, total, nodeId, onPinClick }) {
 
-    const side = type === "input" ? "input" : "output";
+  const spacing = 100 / (total + 1);
+  const top = spacing * (index + 1);
 
-    const spacing = 100 / (total + 1);
-    const top = spacing * (index + 1);
+  const handleStart = (e) => {
+    e.stopPropagation();
 
-    const handleClick = (e) => {
-        e.stopPropagation();
-        onPinClick({
-            nodeId,
-            type,
-            index,
-            total
-        });
-    };
+    if (type === "output") {
+      onPinClick({ nodeId, type, index, total });
+    }
+  };
 
-    return (
-        <div
-            className={`pin pin-${side}`}
-            style={{ top: `${top}%` }}
+  const handleEnd = (e) => {
+    e.stopPropagation();
 
-            onMouseDown={(e) => {
-                e.stopPropagation();
+    if (type === "input") {
+      onPinClick({ nodeId, type, index, total });
+    }
+  };
 
-                if (type === "output") {
-                    onPinClick({
-                        nodeId,
-                        type,
-                        index,
-                        total
-                    });
-                }
-            }}
-
-            onMouseUp={(e) => {
-                e.stopPropagation();
-
-                if (type === "input") {
-                    onPinClick({
-                        nodeId,
-                        type,
-                        index,
-                        total
-                    });
-                }
-            }}
-        />
-    );
+  return (
+    <div
+      className={`pin pin-${type}`}
+      style={{ top: `${top}%` }}
+      onMouseDown={handleStart}
+      onMouseUp={handleEnd}
+    />
+  );
 }
 
 export default Pin;
