@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import '../../styles/workspace.css';
 import Node from "../Node";
 import Wire from "../Wire";
 import { getPinPosition } from "../../utils/pinPosition";
-
+import { propagate } from "./propagate";
 
 
 function Workspace({ nodes, setNodes }) {
@@ -18,6 +18,18 @@ function Workspace({ nodes, setNodes }) {
     const [isPanning, setIsPanning] = useState(false);
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
+    useEffect(() => {
+
+        const newNodes = propagate(nodes, wires);
+
+        const changed = newNodes.some((n, i) => n.value !== nodes[i].value);
+
+        if (changed) {
+            setNodes(newNodes);
+        }
+
+    }, [nodes, wires]);
+
     const screenToWorld = (screenX, screenY) => {
         return {
             x: (screenX - camera.x) / camera.zoom,
@@ -25,18 +37,27 @@ function Workspace({ nodes, setNodes }) {
         };
     };
 
-    const updateNodePosition = (id, x, y) => {
+    const updateNodePosition = (id, x, y, action = null) => {
 
         const snappedX = Math.round(x / grid) * grid;
         const snappedY = Math.round(y / grid) * grid;
 
-        const clampedX = Math.max(0, snappedX);
-        const clampedY = Math.max(0, snappedY);
 
         setNodes((prev) =>
-            prev.map((node) =>
-                node.id === id ? { ...node, x: clampedX, y: clampedY } : node
-            )
+            prev.map((node) => {
+
+                if (node.id !== id) return node;
+
+                if (action === "toggle") {
+                    return { ...node, value: node.value ? 0 : 1 };
+                }
+
+                const snappedX = Math.round(x / grid) * grid;
+                const snappedY = Math.round(y / grid) * grid;
+
+                return { ...node, x: snappedX, y: snappedY };
+
+            })
         );
     };
 
@@ -177,19 +198,16 @@ function Workspace({ nodes, setNodes }) {
                         const p1 = getPinPosition(n1, wire.from, true)
                         const p2 = getPinPosition(n2, wire.to, false)
 
-                        const x1 = p1.x
-                        const y1 = p1.y
-
-                        const x2 = p2.x
-                        const y2 = p2.y
+                        const active = n1.value === 1;
 
                         return (
                             <Wire
                                 key={wire.id}
-                                x1={x1}
-                                y1={y1}
-                                x2={x2}
-                                y2={y2}
+                                x1={p1.x}
+                                y1={p1.y}
+                                x2={p2.x}
+                                y2={p2.y}
+                                active={active}
                             />
                         );
                     })}
@@ -221,6 +239,7 @@ function Workspace({ nodes, setNodes }) {
                         type={node.type}
                         x={node.x}
                         y={node.y}
+                        value={node.value}
                         workspaceRef={workspaceRef}
                         updateNodePosition={updateNodePosition}
                         onPinClick={handlePinClick}

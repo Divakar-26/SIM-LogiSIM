@@ -29,9 +29,7 @@
   gap: 6px;
 }
 
-.node-switch {
-  background: #2ecc71;
-}
+
 
 .node-and {
   background: #3498db;
@@ -45,6 +43,9 @@
   background: #e67e22;
 }
 
+.node-switch,
 .node-led {
-  background: #e74c3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
