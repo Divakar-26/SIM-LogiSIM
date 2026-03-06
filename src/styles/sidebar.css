@@ -1,20 +1,130 @@
 .sidebar {
-  width: 150px;
-  background: #1e1e1e;
-  color: white;
-  padding: 10px;
-  box-sizing: border-box;
+    width: 160px;
+    min-width: 160px;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #313244;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 12px 0 0 0;
+}
+
+.sidebar h3 {
+    margin: 0 0 8px 0;
+    padding: 0 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c7086;
+}
+
+/* Scrollable middle area */
+.sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: #45475a;
+    border-radius: 2px;
+}
+
+.sidebar-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c7086;
+    padding: 10px 4px 4px 4px;
+    border-top: 1px solid #313244;
+    margin-top: 4px;
 }
 
 .sidebar-item {
-  padding: 10px;
-  margin-bottom: 8px;
-  background: #333;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #cdd6f4;
+    user-select: none;
+    transition: background 0.1s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-item:hover {
-  background: #444;
+    background: #313244;
+}
+
+.sidebar-item-custom {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-right: 4px;
+}
+
+.sidebar-item-icon {
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.sidebar-item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+}
+
+.sidebar-item-menu-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: #6c7086;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    border-radius: 4px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.1s, background 0.1s;
+}
+
+.sidebar-item-custom:hover .sidebar-item-menu-btn {
+    opacity: 1;
+}
+
+.sidebar-item-menu-btn:hover {
+    background: #45475a;
+    color: #cdd6f4;
+}
+
+.sidebar-save {
+    flex-shrink: 0;
+    margin: 8px;
+    padding: 9px;
+    background: #313244;
+    color: #89b4fa;
+    border: 1px solid #45475a;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.sidebar-save:hover {
+    background: #45475a;
 }

@@ -1,44 +1,57 @@
 import { sidebarItems } from "../../configs/gates";
 import "../../styles/sidebar.css"
 
-// savedNames comes from React state in App — this is what triggers re-render
-function Sidebar({ addNode, onSaveCircuit, savedNames = [] }) {
+function Sidebar({ addNode, onSaveCircuit, savedNames = [], onRenameComponent, onDeleteComponent }) {
 
     return (
         <div className="sidebar">
 
-            <h3>Components</h3>
+            <h3>Gates</h3>
 
-            {sidebarItems.map((item) => (
-                <div
-                    key={item}
-                    className="sidebar-item"
-                    onClick={() => addNode(item)}
-                >
-                    {item}
-                </div>
-            ))}
+            <div className="sidebar-scroll">
+                {sidebarItems.map((item) => (
+                    <div
+                        key={item}
+                        className="sidebar-item"
+                        onClick={() => addNode(item)}
+                    >
+                        {item}
+                    </div>
+                ))}
 
-            {savedNames.length > 0 && (
-                <>
-                    <h3 style={{ marginTop: "16px", fontSize: "12px", color: "#aaa" }}>Saved</h3>
-                    {savedNames.map(name => (
-                        <div
-                            key={name}
-                            className="sidebar-item"
-                            onClick={() => addNode(name)}
-                        >
-                            📦 {name}
-                        </div>
-                    ))}
-                </>
-            )}
+                {savedNames.length > 0 && (
+                    <>
+                        <div className="sidebar-section-label">Saved</div>
+                        {savedNames.map(name => (
+                            <div
+                                key={name}
+                                className="sidebar-item sidebar-item-custom"
+                                onClick={() => addNode(name)}
+                                onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    // show context menu relative to sidebar
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    onRenameComponent && onRenameComponent(name, e.clientX, e.clientY);
+                                }}
+                            >
+                                <span className="sidebar-item-icon">📦</span>
+                                <span className="sidebar-item-name">{name}</span>
+                                <button
+                                    className="sidebar-item-menu-btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRenameComponent && onRenameComponent(name, e.clientX, e.clientY);
+                                    }}
+                                    title="Options"
+                                >⋯</button>
+                            </div>
+                        ))}
+                    </>
+                )}
+            </div>
 
-            <button
-                className="sidebar-save"
-                onClick={onSaveCircuit}
-            >
-                Save Circuit
+            <button className="sidebar-save" onClick={onSaveCircuit}>
+                💾 Save Circuit
             </button>
 
         </div>
