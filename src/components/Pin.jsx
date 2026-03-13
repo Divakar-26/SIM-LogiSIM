@@ -1,49 +1,46 @@
 import "../styles/Pin.css";
 import { useState } from "react";
 
-function Pin({ type, index, total, nodeId, onPinClick, label }) {
-
-    const spacing = 100 / (total + 1);
-    const top = spacing * (index + 1);
+// index/total/nodeHeight passed as numbers so Pin can place itself absolutely
+function Pin({ type, index, total, nodeHeight, nodeId, onPinClick, label }) {
     const [hovered, setHovered] = useState(false);
 
-    const handleStart = (e) => {
-        e.stopPropagation();
-        if (type === "output") onPinClick({ nodeId, type, index, total });
-    };
+    // Evenly space pins across nodeHeight
+    const spacing = nodeHeight / (total + 1);
+    const topPx   = spacing * (index + 1);
 
-    const handleEnd = (e) => {
-        e.stopPropagation();
-        if (type === "input") onPinClick({ nodeId, type, index, total });
-    };
-
+    const handleStart = (e) => { e.stopPropagation(); if (type === "output") onPinClick({ nodeId, type, index, total }); };
+    const handleEnd   = (e) => { e.stopPropagation(); if (type === "input")  onPinClick({ nodeId, type, index, total }); };
+ 
     return (
         <div
-            style={{ position: "absolute", top: `${top}%`, [type === "input" ? "left" : "right"]: 0 }}
+            style={{
+                position: "absolute",
+                top: topPx,
+                [type === "input" ? "left" : "right"]: 0,
+                transform: "translate(0, -50%)",
+                display: "flex",
+                alignItems: "center",
+            }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
             <div
                 className={`pin pin-${type}`}
-                style={{ top: 0, position: "relative", transform: "translateY(-50%)" }}
                 onMouseDown={handleStart}
                 onMouseUp={handleEnd}
             />
             {label && (
                 <div style={{
                     position: "absolute",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    ...(type === "input"
-                        ? { left: 14, textAlign: "left" }
-                        : { right: 14, textAlign: "right" }),
+                    ...(type === "input" ? { left: 14 } : { right: 14 }),
                     whiteSpace: "nowrap",
                     fontSize: "10px",
                     fontWeight: 500,
                     color: "#cdd6f4",
                     pointerEvents: "none",
                     userSelect: "none",
-                    opacity: hovered ? 0.9 : 0.3,
+                    opacity: hovered ? 1.0 : 0.55,
                     transition: "opacity 0.15s",
                 }}>
                     {label}

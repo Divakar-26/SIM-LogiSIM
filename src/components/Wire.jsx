@@ -40,7 +40,7 @@ function Wire({ x1, y1, x2, y2, active }) {
         strokeWidth={width}
         fill="none"
         strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeLinejoin="round" 
       />
 
       {/* Dots at endpoints */}

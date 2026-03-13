@@ -11,7 +11,7 @@
     padding: 12px 0 0 0;
 }
 
-.sidebar h3 { 
+.sidebar h3 {
     margin: 0 0 8px 0;
     padding: 0 12px;
     font-size: 11px;
@@ -42,15 +42,50 @@
     border-radius: 2px;
 }
 
-.sidebar-section-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6c7086;
-    padding: 10px 4px 4px 4px;
-    border-top: 1px solid #313244;
-    margin-top: 4px;
+/* Folders */
+.sidebar-folder {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2px;
 }
+
+.sidebar-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    user-select: none;
+    transition: background 0.1s;
+}
+
+.sidebar-folder-header:hover {
+    background: #252535;
+}
+
+.sidebar-folder-arrow {
+    font-size: 10px;
+    color: #6c7086;
+    width: 10px;
+    flex-shrink: 0;
+}
+
+.sidebar-folder-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #89b4fa;
+}
+
+.sidebar-folder-body {
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
 
 .sidebar-item {
     padding: 7px 10px;
@@ -111,6 +146,7 @@
     color: #cdd6f4;
 }
 
+/* Save button pinned at bottom */
 .sidebar-save {
     flex-shrink: 0;
     margin: 8px;

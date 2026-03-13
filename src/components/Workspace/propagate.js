@@ -71,5 +71,5 @@ export function propagate(nodes, wires) {
     if (!changed) break;
   }
 
-  return Array.from(nodeMap.values());
+  return Array.from(nodeMap.values()); 
 }

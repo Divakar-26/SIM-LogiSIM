@@ -1,23 +1,21 @@
-
 .pin {
-  width: 10px;
-  height: 10px;
-  background: red;
-  border-radius: 50%;
-  border: 2px solid black;
-  cursor: crosshair;
-  box-sizing: border-box;
+    width: 10px;
+    height: 10px;
+    background: #2a2a3a;
+    border-radius: 50%;
+    border: 2px solid #64748b;
+    cursor: crosshair;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: background 0.1s, border-color 0.1s, box-shadow 0.1s;
 }
 
 .pin:hover {
-  background: white;
-  cursor: pointer;
+    background: #f8fafc;
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 3px rgba(137,180,250,0.25);
+    cursor: pointer;
 }
 
-.pin-input {
-  left: -5px;
-}
-
-.pin-output {
-  right: -5px;
-}
+.pin-input  { margin-left:  -5px; }
+.pin-output { margin-right: -5px; } 
