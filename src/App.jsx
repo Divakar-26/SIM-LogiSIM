@@ -1,3 +1,5 @@
+// App.jsx
+
 import { useState, useRef } from 'react'
 import Sidebar from './components/Sidebar/Sidebar.jsx'
 import Workspace from './components/Workspace/Workspace.jsx'
@@ -7,7 +9,6 @@ import SettingsPanel from "./components/Workspace/SettingsPanel";
 
 loadSavedComponents();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 let _uid = 100;
 const uid = () => ++_uid;
 
@@ -109,24 +110,19 @@ function TabBar({ tabs, activeId, onSelect, onAdd, onRename, onClose, onMiddleCl
         );
       })}
 
-      {/* + new tab */}
       <button onClick={onAdd} title="New playground"
         style={{ background: "transparent", border: "none", color: "#313244", cursor: "pointer", fontSize: 18, padding: "0 10px", lineHeight: 1, flexShrink: 0 }}
         onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
         onMouseLeave={e => e.currentTarget.style.color = "#313244"}
       >+</button>
 
-      {/* Spacer */}
       <div style={{ flex: 1 }} />
 
-      {/* ⚙ Settings gear — right side of tab bar */}
       <button onClick={onSettings} title="Settings"
         style={{
           background: "transparent", border: "none",
           color: "#45475a", cursor: "pointer",
-          fontSize: 15, padding: "0 12px",
-          lineHeight: 1, flexShrink: 0,
-          transition: "color 0.12s",
+          fontSize: 15, padding: "0 12px", lineHeight: 1, flexShrink: 0, transition: "color 0.12s",
         }}
         onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
         onMouseLeave={e => e.currentTarget.style.color = "#45475a"}
@@ -140,26 +136,47 @@ function App() {
   const [tabs, setTabs]         = useState([makePlayground("Playground 1")]);
   const [activeId, setActiveId] = useState(() => tabs[0].id);
   const [showSettings, setShowSettings] = useState(false);
+  const [savedNames, setSavedNames]     = useState(Object.keys(customComponentRegistry));
 
-  const [savedNames, setSavedNames] = useState(Object.keys(customComponentRegistry));
+  // ── Pending placement (ghost placement system) ───────────────────────────
+  const [pendingTypes, setPendingTypes] = useState([]);
 
-  // Save component modal
+  const requestPlace = (type) => {
+    setPendingTypes(prev => [...prev, type]);
+  };
+
+  const handlePlacePending = (placements) => {
+    setNodes(prev => [
+      ...prev,
+      ...placements.map(p => ({
+        id: uid(), type: p.type, x: p.x, y: p.y, value: 0, label: "",
+        ...(p.type === "CLOCK" ? { hz: 1, duty: 0.5 } : {}),
+      })),
+    ]);
+    setPendingTypes([]);
+  };
+
+  const handleCancelPending = () => {
+    setPendingTypes([]);
+  };
+
+  // ── Save component modal ─────────────────────────────────────────────────
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveName, setSaveName]           = useState("");
   const [saveError, setSaveError]         = useState("");
   const saveInputRef = useRef(null);
 
-  // Sidebar component menu
+  // ── Sidebar component menu ───────────────────────────────────────────────
   const [componentMenu, setComponentMenu] = useState(null);
   const renameRef = useRef(null);
 
-  // Generic prompts
+  // ── Generic prompts ──────────────────────────────────────────────────────
   const [namePrompt, setNamePrompt]       = useState(null);
   const [confirmPrompt, setConfirmPrompt] = useState(null);
 
   const fileInputRef = useRef(null);
 
-  // ── Active tab data ─────────────────────────────────────────────────────────
+  // ── Active tab ───────────────────────────────────────────────────────────
   const activeTab = tabs.find(t => t.id === activeId) ?? tabs[0];
   const nodes     = activeTab.nodes;
   const wires     = activeTab.wires;
@@ -173,11 +190,12 @@ function App() {
     t.id === activeId ? { ...t, dirty: true, wires: typeof updater === "function" ? updater(t.wires) : updater } : t
   ));
 
-  // ── Tab management ──────────────────────────────────────────────────────────
+  // ── Tab management ───────────────────────────────────────────────────────
   const addTab = () => {
     const tab = makePlayground(`Playground ${tabs.length + 1}`);
     setTabs(prev => [...prev, tab]);
     setActiveId(tab.id);
+    setPendingTypes([]); // clear ghost on tab switch
   };
 
   const doCloseTab = (id) => {
@@ -211,7 +229,7 @@ function App() {
     });
   };
 
-  // ── Export / Import ─────────────────────────────────────────────────────────
+  // ── Export / Import ──────────────────────────────────────────────────────
   const savePlayground = () => {
     setNamePrompt({
       title: "Export playground",
@@ -224,7 +242,6 @@ function App() {
         const url     = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
         Object.assign(document.createElement("a"), { href: url, download: fname }).click();
         URL.revokeObjectURL(url);
-        // Mark clean after export
         patchTab(activeId, { dirty: false });
         setNamePrompt(null);
       },
@@ -252,7 +269,7 @@ function App() {
     e.target.value = "";
   };
 
-  // ── Save component ──────────────────────────────────────────────────────────
+  // ── Save component ───────────────────────────────────────────────────────
   const saveCircuit = () => {
     const switches = nodes.filter(n => n.type === "SWITCH");
     const leds     = nodes.filter(n => n.type === "LED");
@@ -279,10 +296,7 @@ function App() {
     setShowSaveModal(false); setSaveName("");
   };
 
-  const addNode = (type) =>
-    setNodes(prev => [...prev, { id: uid(), type, x: 200, y: 200, value: 0, label: "" }]);
-
-  // ── Sidebar component menu ──────────────────────────────────────────────────
+  // ── Sidebar component menu ───────────────────────────────────────────────
   const openComponentMenu = (name, x, y) =>
     setComponentMenu({ name, x, y, mode: "menu", renameValue: name });
 
@@ -318,12 +332,12 @@ function App() {
     setComponentMenu(null);
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <SettingsProvider>
       <div style={{ display: "flex", height: "100vh" }} onClick={() => setComponentMenu(null)}>
         <Sidebar
-          addNode={addNode}
+          onRequestPlace={requestPlace}
           onSaveCircuit={saveCircuit}
           savedNames={savedNames}
           onRenameComponent={openComponentMenu}
@@ -332,7 +346,7 @@ function App() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <TabBar
             tabs={tabs} activeId={activeId}
-            onSelect={setActiveId}
+            onSelect={(id) => { setActiveId(id); setPendingTypes([]); }}
             onAdd={addTab}
             onRename={renameTab}
             onClose={closeTab}
@@ -345,6 +359,9 @@ function App() {
               key={activeId}
               nodes={nodes} setNodes={setNodes}
               wires={wires} setWires={setWires}
+              pendingTypes={pendingTypes}
+              onPlacePending={handlePlacePending}
+              onCancelPending={handleCancelPending}
             />
             {/* Export / Import */}
             <div style={{ position: "absolute", bottom: 20, left: 20, zIndex: 200, display: "flex", gap: 6 }}>
@@ -355,10 +372,8 @@ function App() {
           </div>
         </div>
 
-        {/* ── Settings panel ── */}
         {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
-        {/* ── Name prompt ── */}
         {namePrompt && (
           <NameModal
             title={namePrompt.title}
@@ -370,7 +385,6 @@ function App() {
           />
         )}
 
-        {/* ── Confirm prompt ── */}
         {confirmPrompt && (
           <ConfirmModal
             message={confirmPrompt.message}
@@ -381,7 +395,6 @@ function App() {
           />
         )}
 
-        {/* ── Save component modal ── */}
         {showSaveModal && (
           <div style={S.overlay}>
             <div style={S.modal} onClick={e => e.stopPropagation()}>
@@ -405,7 +418,6 @@ function App() {
           </div>
         )}
 
-        {/* ── Sidebar component context menu ── */}
         {componentMenu && (
           <div style={{ ...S.contextMenu, left: componentMenu.x, top: componentMenu.y }} onClick={e => e.stopPropagation()}>
             {componentMenu.mode === "menu" ? (<>

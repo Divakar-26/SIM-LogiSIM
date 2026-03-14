@@ -1,10 +1,13 @@
+// src/components/Sidebar/Sidebar.jsx
+
 import { useState } from "react";
 import "../../styles/sidebar.css";
 
 const FOLDERS = [
-    { key: "inputs",  label: "Inputs",  items: ["SWITCH"] },
-    { key: "outputs", label: "Outputs", items: ["LED"] },
-    { key: "gates",   label: "Gates",   items: ["AND", "OR", "NOT"] },
+    { key: "inputs",     label: "Inputs",     items: ["SWITCH"] },
+    { key: "sequential", label: "Sequential", items: ["CLOCK"] },
+    { key: "outputs",    label: "Outputs",    items: ["LED"] },
+    { key: "gates",      label: "Gates",      items: ["AND", "OR", "NOT"] },
 ];
 
 function Folder({ label, children, defaultOpen = true }) {
@@ -20,7 +23,8 @@ function Folder({ label, children, defaultOpen = true }) {
     );
 }
 
-function Sidebar({ addNode, onSaveCircuit, savedNames = [], onRenameComponent }) {
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function Sidebar({ onRequestPlace, onSaveCircuit, savedNames = [], onRenameComponent }) {
     return (
         <div className="sidebar">
             <div className="sidebar-scroll">
@@ -30,9 +34,19 @@ function Sidebar({ addNode, onSaveCircuit, savedNames = [], onRenameComponent })
                             <div
                                 key={item}
                                 className="sidebar-item"
-                                onClick={() => addNode(item)}
+                                onClick={() => onRequestPlace(item)}
+                                title="Click to pick up · click again to stack · click in workspace to place"
                             >
-                                {item}
+                                {item === "CLOCK" ? (
+                                    <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style={{ flexShrink: 0, opacity: 0.7 }}>
+                                            <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" strokeWidth="1.2"/>
+                                            <line x1="5.5" y1="2.5" x2="5.5" y2="5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                                            <line x1="5.5" y1="5.5" x2="8"   y2="7"   stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                                        </svg>
+                                        CLOCK
+                                    </span>
+                                ) : item}
                             </div>
                         ))}
                     </Folder>
@@ -44,11 +58,12 @@ function Sidebar({ addNode, onSaveCircuit, savedNames = [], onRenameComponent })
                             <div
                                 key={name}
                                 className="sidebar-item sidebar-item-custom"
-                                onClick={() => addNode(name)}
+                                onClick={() => onRequestPlace(name)}
                                 onContextMenu={(e) => {
                                     e.preventDefault();
                                     onRenameComponent && onRenameComponent(name, e.clientX, e.clientY);
                                 }}
+                                title="Click to pick up · right-click for options"
                             >
                                 <span className="sidebar-item-icon">📦</span>
                                 <span className="sidebar-item-name">{name}</span>
