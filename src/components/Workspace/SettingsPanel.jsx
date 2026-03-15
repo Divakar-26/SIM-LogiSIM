@@ -1,7 +1,5 @@
 import { useSettings } from "../../configs/SettingsContext";
 
-// ── Reusable controls ─────────────────────────────────────────────────────────
-
 function Row({ label, hint, children }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "6px 0" }}>

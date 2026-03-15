@@ -1,9 +1,12 @@
+// src/utils/propagateCustom.js
+// O(1) truth-table lookup — only called for combinational (feedback-free) components.
+// Feedback components use evaluateFeedbackComponent() from customComponents.js directly.
+
 import { customComponentRegistry } from "../configs/customComponents";
 
-// O(1) lookup — truth table was baked at save time
 export function evaluateCustomComponent(name, inputValues) {
   const comp = customComponentRegistry[name];
-  if (!comp?.truthTable) return [];
+  if (!comp?.truthTable) return new Array((comp?.outputCount) || 1).fill(0);
 
   const key = Array.from(
     { length: comp.inputCount },
