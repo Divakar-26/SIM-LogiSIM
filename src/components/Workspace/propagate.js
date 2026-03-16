@@ -1,10 +1,7 @@
 // src/components/Workspace/propagate.js
-// Optimized combinational propagation + live-simulation fallthrough for
-// feedback (sequential) custom components (latches, SR, D, T, JK, etc.).
 
 import { evaluateCustomComponent } from "../../utils/propagateCustom";
-import { evaluateFeedbackComponent } from "../../configs/customComponents";
-import { customComponentRegistry }  from "../../configs/customComponents";
+import { evaluateFeedbackComponent, customComponentRegistry } from "../../configs/customComponents";
 
 function topoSort(nodeArray, wires) {
     const inDeg = new Map(), adj = new Map();
@@ -13,13 +10,11 @@ function topoSort(nodeArray, wires) {
     wires.forEach(w => {
         if (!adj.has(w.from.nodeId) || !inDeg.has(w.to.nodeId)) return;
         const key = `${w.from.nodeId}→${w.to.nodeId}`;
-        if (edgeSeen.has(key)) return;
-        edgeSeen.add(key);
+        if (edgeSeen.has(key)) return; edgeSeen.add(key);
         adj.get(w.from.nodeId).push(w.to.nodeId);
         inDeg.set(w.to.nodeId, inDeg.get(w.to.nodeId) + 1);
     });
-    const queue = [];
-    inDeg.forEach((d, id) => { if (d === 0) queue.push(id); });
+    const queue = []; inDeg.forEach((d, id) => { if (d === 0) queue.push(id); });
     const sorted = [];
     while (queue.length) {
         const id = queue.shift(); sorted.push(id);
@@ -41,22 +36,27 @@ function arrEq(a, b) {
     return true;
 }
 
-// Deep-compare two internalState objects (map of nodeId → value-array)
 function internalStateEq(a, b) {
     if (a === b) return true;
+    if (!a && !b) return true;
     if (!a || !b) return false;
     const ka = Object.keys(a), kb = Object.keys(b);
     if (ka.length !== kb.length) return false;
-    for (const k of ka) { if (!arrEq(a[k], b[k])) return false; }
+    for (const k of ka) {
+        const va = a[k], vb = b[k];
+        // Sub-states are objects, node values are arrays
+        if (Array.isArray(va) && Array.isArray(vb)) { if (!arrEq(va, vb)) return false; }
+        else if (typeof va === 'object' && typeof vb === 'object') { if (!internalStateEq(va, vb)) return false; }
+        else if (va !== vb) return false;
+    }
     return true;
 }
 
 export function propagate(nodes, wires) {
     const nodeMap   = new Map();
-    const outgoing  = new Map();  // nodeId → Wire[]
-    const inputsMap = new Map();  // nodeId → value[]
+    const outgoing  = new Map();
+    const inputsMap = new Map();
 
-    // Don't copy source nodes; copy everything else so we can mutate safely
     nodes.forEach(n => {
         const isSource = n.type === "SWITCH" || n.type === "CLOCK";
         nodeMap.set(n.id, isSource ? n : { ...n });
@@ -80,7 +80,6 @@ export function propagate(nodes, wires) {
         if (node.type === "SWITCH" || node.type === "CLOCK" || node.type.startsWith("IN_")) return;
 
         const custom = customComponentRegistry[node.type];
-
         let expectedInputs;
         if (node.type === "NOT" || node.type === "LED" || node.type === "JUNCTION") expectedInputs = 1;
         else if (node.type.startsWith("OUT_")) expectedInputs = parseInt(node.type.split("_")[1]) || 1;
@@ -91,7 +90,7 @@ export function propagate(nodes, wires) {
         const filled = [];
         for (let i = 0; i < expectedInputs; i++) filled[i] = inArr[i] ?? 0;
 
-        let nv = node.value, no = node.outputs;
+        let nv = node.value, no = node.outputs, ni = node.internalState;
 
         switch (node.type) {
             case "AND":      nv = filled[0] && filled[1] ? 1 : 0; break;
@@ -100,29 +99,36 @@ export function propagate(nodes, wires) {
             case "LED":      nv = filled[0] ? 1 : 0;              break;
             case "JUNCTION": nv = filled[0] ?? 0;                  break;
             default:
-                if (node.type.startsWith("OUT_")) {
-                    nv = filled[0] ?? 0;
-                    no = filled.slice();
-                } else if (custom?.hasFeedback) {
-                    // ── Sequential / feedback custom component ─────────────────
-                    // Use live simulation so "hold" states are preserved.
-                    // node.internalState carries the previous stable internal values.
+                if (custom?.hasFeedback) {
+                    // Live simulation — carries full hierarchical internal state
                     const { outputs, newInternalState } = evaluateFeedbackComponent(
                         node.type, filled, node.internalState || {}
                     );
-                    // Always store the new internal state regardless of output change
-                    node.internalState = newInternalState;
-                    if (!arrEq(no, outputs)) { no = outputs; nv = outputs[0] ?? 0; }
-                } else if (custom) {
-                    // ── Combinational custom component (O(1) truth-table lookup)
+                    if (!arrEq(no, outputs) || !internalStateEq(ni, newInternalState)) {
+                        no = outputs;
+                        nv = outputs[0] ?? 0;
+                        ni = newInternalState;
+                    }
+                } else if (custom?.truthTable) {
                     const outs = evaluateCustomComponent(node.type, filled);
                     if (!arrEq(no, outs)) { no = outs; nv = outs[0] ?? 0; }
+                } else if (custom) {
+                    // hasFeedback=false but truthTable is also null/missing (shouldn't happen)
+                    nv = 0;
+                } else if (node.type.startsWith("OUT_")) {
+                    nv = filled[0] ?? 0;
+                    no = filled.slice();
                 }
         }
 
-        if (nv !== node.value || !arrEq(no, node.outputs)) {
-            node.value   = nv;
-            node.outputs = no;
+        const valChanged     = nv !== node.value;
+        const outChanged     = !arrEq(no, node.outputs);
+        const stateChanged   = ni !== node.internalState;
+
+        if (valChanged || outChanged || stateChanged) {
+            node.value         = nv;
+            node.outputs       = no;
+            node.internalState = ni;
             const ow = outgoing.get(node.id);
             if (ow) ow.forEach(w => {
                 let arr = inputsMap.get(w.to.nodeId);
@@ -132,22 +138,17 @@ export function propagate(nodes, wires) {
         }
     });
 
-    // ── Build result — reuse original references where nothing changed ────────
-    // For feedback components, ALSO check internalState so state is persisted.
     let dirty = false;
     const result = nodes.map(orig => {
         const u = nodeMap.get(orig.id);
         if (!u || u === orig) return orig;
-
-        const custom = customComponentRegistry[orig.type];
-        const stateChanged = custom?.hasFeedback && !internalStateEq(u.internalState, orig.internalState);
-
-        if (u.value !== orig.value || !arrEq(u.outputs, orig.outputs) || stateChanged) {
+        if (u.value !== orig.value
+            || !arrEq(u.outputs, orig.outputs)
+            || !internalStateEq(u.internalState, orig.internalState)) {
             dirty = true;
             return u;
         }
         return orig;
     });
-
     return dirty ? result : nodes;
 }

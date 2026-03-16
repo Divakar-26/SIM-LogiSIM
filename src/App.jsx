@@ -1,5 +1,4 @@
 // App.jsx
-
 import { useState, useRef } from 'react'
 import Sidebar from './components/Sidebar/Sidebar.jsx'
 import Workspace from './components/Workspace/Workspace.jsx'
@@ -21,7 +20,7 @@ const makePlayground = (name = "Playground 1") => ({
     { id: uid(), type: "LED",    x: 500, y: 200, value: 0, label: "" },
   ],
   wires:   [],
-  regions: [],   // [{ id, label, nodeIds }]
+  regions: [],
 });
 
 // ── Name Modal ────────────────────────────────────────────────────────────────
@@ -31,13 +30,10 @@ function NameModal({ title, defaultValue = "", placeholder, onConfirm, onCancel,
     <div style={S.overlay} onClick={onCancel}>
       <div style={S.modal} onClick={e => e.stopPropagation()}>
         <h2 style={{ margin: 0, fontSize: 15, color: "#cdd6f4" }}>{title}</h2>
-        <input
-          autoFocus value={val}
+        <input autoFocus value={val}
           onChange={e => setVal(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && val.trim()) onConfirm(val.trim()); if (e.key === "Escape") onCancel(); }}
-          placeholder={placeholder}
-          style={S.input}
-        />
+          placeholder={placeholder} style={S.input} />
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button onClick={onCancel} style={S.btnCancel}>Cancel</button>
           <button onClick={() => val.trim() && onConfirm(val.trim())} style={S.btnPrimary}>{confirmLabel}</button>
@@ -63,72 +59,102 @@ function ConfirmModal({ message, onConfirm, onCancel, confirmLabel = "Yes", dang
 }
 
 // ── Tab Bar ───────────────────────────────────────────────────────────────────
+// Rename only via right-click context menu — double-click is intentionally removed.
 function TabBar({ tabs, activeId, onSelect, onAdd, onRename, onClose, onMiddleClose, onSettings }) {
+  // tabMenu: { tabId, x, y } | null
+  const [tabMenu, setTabMenu] = useState(null);
+
+  const closeMenu = () => setTabMenu(null);
+
   return (
-    <div style={{
-      display: "flex", alignItems: "stretch",
-      background: "#13131f", borderBottom: "1px solid #252535",
-      height: 34, flexShrink: 0, overflowX: "auto", overflowY: "hidden",
-    }}>
-      {tabs.map(tab => {
-        const active = tab.id === activeId;
-        return (
-          <div
-            key={tab.id}
-            onClick={() => onSelect(tab.id)}
-            onDoubleClick={() => onRename(tab.id, tab.name)}
-            onMouseDown={e => { if (e.button === 1) { e.preventDefault(); onMiddleClose(tab.id); } }}
-            title="Double-click to rename · Middle-click to close"
-            style={{
-              display: "flex", alignItems: "center", gap: 5,
-              padding: "0 10px 0 13px",
-              minWidth: 90, maxWidth: 170,
-              cursor: "pointer", flexShrink: 0,
-              background: active ? "#1e1e2e" : "transparent",
-              borderRight: "1px solid #1a1a28",
-              borderBottom: active ? "2px solid #89b4fa" : "2px solid transparent",
-              userSelect: "none",
-            }}
-          >
-            <span style={{
-              flex: 1, overflow: "hidden", textOverflow: "ellipsis",
-              whiteSpace: "nowrap", fontSize: 11,
-              color: active ? "#cdd6f4" : "#585b70",
-              fontWeight: active ? 600 : 400,
-            }}>
-              {tab.dirty ? <span style={{ color: "#f9e2af", marginRight: 2 }}>*</span> : null}
-              {tab.name}
-            </span>
-            {tabs.length > 1 && (
-              <span
-                onClick={e => { e.stopPropagation(); onClose(tab.id); }}
-                style={{ color: "#313244", fontSize: 13, lineHeight: 1, padding: "1px 1px", borderRadius: 3, flexShrink: 0 }}
-                onMouseEnter={e => e.currentTarget.style.color = "#f38ba8"}
-                onMouseLeave={e => e.currentTarget.style.color = "#313244"}
-              >✕</span>
-            )}
-          </div>
-        );
-      })}
+    <>
+      <div style={{
+        display: "flex", alignItems: "stretch",
+        background: "#13131f", borderBottom: "1px solid #252535",
+        height: 34, flexShrink: 0, overflowX: "auto", overflowY: "hidden",
+      }}
+        onClick={closeMenu}
+      >
+        {tabs.map(tab => {
+          const active = tab.id === activeId;
+          return (
+            <div
+              key={tab.id}
+              onClick={() => { onSelect(tab.id); closeMenu(); }}
+              onContextMenu={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                setTabMenu({ tabId: tab.id, x: e.clientX, y: e.clientY });
+              }}
+              onMouseDown={e => { if (e.button === 1) { e.preventDefault(); onMiddleClose(tab.id); } }}
+              title="Right-click to rename · Middle-click to close"
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "0 10px 0 13px",
+                minWidth: 90, maxWidth: 170,
+                cursor: "pointer", flexShrink: 0,
+                background: active ? "#1e1e2e" : "transparent",
+                borderRight: "1px solid #1a1a28",
+                borderBottom: active ? "2px solid #89b4fa" : "2px solid transparent",
+                userSelect: "none",
+              }}
+            >
+              <span style={{
+                flex: 1, overflow: "hidden", textOverflow: "ellipsis",
+                whiteSpace: "nowrap", fontSize: 11,
+                color: active ? "#cdd6f4" : "#585b70",
+                fontWeight: active ? 600 : 400,
+              }}>
+                {tab.dirty ? <span style={{ color: "#f9e2af", marginRight: 2 }}>*</span> : null}
+                {tab.name}
+              </span>
+              {tabs.length > 1 && (
+                <span
+                  onClick={e => { e.stopPropagation(); closeMenu(); onClose(tab.id); }}
+                  style={{ color: "#313244", fontSize: 13, lineHeight: 1, padding: "1px 1px", borderRadius: 3, flexShrink: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.color = "#f38ba8"}
+                  onMouseLeave={e => e.currentTarget.style.color = "#313244"}
+                >✕</span>
+              )}
+            </div>
+          );
+        })}
 
-      <button onClick={onAdd} title="New playground"
-        style={{ background: "transparent", border: "none", color: "#313244", cursor: "pointer", fontSize: 18, padding: "0 10px", lineHeight: 1, flexShrink: 0 }}
-        onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
-        onMouseLeave={e => e.currentTarget.style.color = "#313244"}
-      >+</button>
+        <button onClick={() => { onAdd(); closeMenu(); }} title="New playground"
+          style={{ background: "transparent", border: "none", color: "#313244", cursor: "pointer", fontSize: 18, padding: "0 10px", lineHeight: 1, flexShrink: 0 }}
+          onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
+          onMouseLeave={e => e.currentTarget.style.color = "#313244"}
+        >+</button>
 
-      <div style={{ flex: 1 }} />
+        <div style={{ flex: 1 }} />
 
-      <button onClick={onSettings} title="Settings"
-        style={{
-          background: "transparent", border: "none",
-          color: "#45475a", cursor: "pointer",
-          fontSize: 15, padding: "0 12px", lineHeight: 1, flexShrink: 0, transition: "color 0.12s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
-        onMouseLeave={e => e.currentTarget.style.color = "#45475a"}
-      >⚙</button>
-    </div>
+        <button onClick={onSettings} title="Settings"
+          style={{ background: "transparent", border: "none", color: "#45475a", cursor: "pointer", fontSize: 15, padding: "0 12px", lineHeight: 1, flexShrink: 0, transition: "color 0.12s" }}
+          onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
+          onMouseLeave={e => e.currentTarget.style.color = "#45475a"}
+        >⚙</button>
+      </div>
+
+      {/* Tab right-click context menu */}
+      {tabMenu && (
+        <div
+          style={{ ...S.contextMenu, left: tabMenu.x, top: tabMenu.y }}
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <div style={S.menuItem} onClick={() => {
+            const tab = tabs.find(t => t.id === tabMenu.tabId);
+            if (tab) onRename(tab.id, tab.name);
+            closeMenu();
+          }}>✏️ Rename</div>
+          {tabs.length > 1 && (
+            <div style={{ ...S.menuItem, color: "#f38ba8" }} onClick={() => {
+              onClose(tabMenu.tabId); closeMenu();
+            }}>✕ Close</div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -139,12 +165,13 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [savedNames, setSavedNames]     = useState(Object.keys(customComponentRegistry));
 
+  // ── App-level clipboard — shared across all tabs ─────────────────────────
+  const clipboardRef = useRef(null);
+
   // ── Pending placement (ghost placement system) ───────────────────────────
   const [pendingTypes, setPendingTypes] = useState([]);
 
-  const requestPlace = (type) => {
-    setPendingTypes(prev => [...prev, type]);
-  };
+  const requestPlace = (type) => setPendingTypes(prev => [...prev, type]);
 
   const handlePlacePending = (placements) => {
     setNodes(prev => [
@@ -152,8 +179,6 @@ function App() {
       ...placements.map(p => {
         const base = { id: uid(), type: p.type, x: p.x, y: p.y, value: 0, label: "" };
         if (p.type === "CLOCK") return { ...base, hz: 1, duty: 0.5 };
-        if (p.type.startsWith("IN_"))  { const n = parseInt(p.type.split("_")[1]) || 1; return { ...base, outputs: Array(n).fill(0) }; }
-        if (p.type.startsWith("OUT_")) { const n = parseInt(p.type.split("_")[1]) || 1; return { ...base, outputs: Array(n).fill(0) }; }
         return base;
       }),
     ]);
@@ -369,8 +394,8 @@ function App() {
               pendingTypes={pendingTypes}
               onPlacePending={handlePlacePending}
               onCancelPending={handleCancelPending}
+              clipboardRef={clipboardRef}
             />
-            {/* Export / Import */}
             <div style={{ position: "absolute", bottom: 20, left: 20, zIndex: 200, display: "flex", gap: 6 }}>
               <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={loadPlayground} />
               <PlayBtn onClick={savePlayground}>↓ Export</PlayBtn>
@@ -462,7 +487,7 @@ function PlayBtn({ onClick, children }) {
 const S = {
   overlay:     { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3000 },
   modal:       { background: "#1e1e2e", color: "#cdd6f4", borderRadius: 10, padding: "24px 28px", minWidth: 300, boxShadow: "0 8px 32px rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", gap: 12 },
-  contextMenu: { position: "fixed", background: "#1e1e2e", border: "1px solid #45475a", borderRadius: 8, padding: 6, minWidth: 180, boxShadow: "0 4px 20px rgba(0,0,0,0.5)", zIndex: 4000, display: "flex", flexDirection: "column", gap: 2 },
+  contextMenu: { position: "fixed", background: "#1e1e2e", border: "1px solid #45475a", borderRadius: 8, padding: 6, minWidth: 160, boxShadow: "0 4px 20px rgba(0,0,0,0.5)", zIndex: 4000, display: "flex", flexDirection: "column", gap: 2 },
   menuHeader:  { padding: "6px 10px", fontSize: 11, color: "#6c7086", borderBottom: "1px solid #313244", marginBottom: 4, fontWeight: "bold" },
   menuItem:    { padding: "8px 12px", borderRadius: 5, cursor: "pointer", fontSize: 13, color: "#cdd6f4", userSelect: "none" },
   input:       { padding: "8px 12px", borderRadius: 6, fontSize: 13, border: "1px solid #45475a", background: "#313244", color: "#cdd6f4", outline: "none", width: "100%", boxSizing: "border-box" },
