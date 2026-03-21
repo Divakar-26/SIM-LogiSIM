@@ -1,55 +1,128 @@
+/* ─── ROOT / GOLDEN THEME (DEFAULT) ─── */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  font-family: 'Courier New', monospace;
+  line-height: 1.6;
+  font-weight: 700;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: #f5f1e8;
+  background-color: #18161a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Golden Theme */
+  --primary-light: #ffd700;
+  --primary-dark: #ff6b35;
+  --primary-bg: #2a2825;
+  --primary-fg: #f5f1e8;
+  --secondary-bg: #3d3935;
+  --secondary-fg: #f5d5b8;
+}
+
+/* ─── PURPLE THEME ─── */
+:root.theme-purple {
+  --primary-light: #7b6df5;
+  --primary-dark: #5F4FE6;
+  --primary-bg: #0f0f12;
+  --primary-fg: #f5f5f5;
+  --secondary-bg: #2a2a2e;
+  --secondary-fg: #c7b6f3;
+}
+
+/* ─── CRIMSON THEME ─── */
+:root.theme-crimson {
+  --primary-light: #EA435F;
+  --primary-dark: #D00000;
+  --primary-bg: #0f0f0f;
+  --primary-fg: #f5f5f5;
+  --secondary-bg: #1a1a1a;
+  --secondary-fg: #f2a7b2;
+}
+
+/* ─── MYSTIQUE THEME ─── */
+:root.theme-mystique {
+  --primary-light: #C4A1FF;
+  --primary-dark: #9678FF;
+  --primary-bg: #121014;
+  --primary-fg: #f5f5f5;
+  --secondary-bg: #1a1820;
+  --secondary-fg: #c7b6f3;
+}
+
+/* ─── SUNSET THEME ─── */
+:root.theme-sunset {
+  --primary-light: #F07200;
+  --primary-dark: #ff8011;
+  --primary-bg: #12100e;
+  --primary-fg: #f5f5f5;
+  --secondary-bg: #1a1a1a;
+  --secondary-fg: #ffb679;
+}
+
+/* ─── FOREST THEME ─── */
+:root.theme-forest {
+  --primary-light: #599D77;
+  --primary-dark: #39654c;
+  --primary-bg: #0f1210;
+  --primary-fg: #f5f5f5;
+  --secondary-bg: #181c19;
+  --secondary-fg: #9cd9b8;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  font-weight: 700;
+  color: var(--primary-light);
+  text-decoration: underline;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--primary-dark);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--primary-bg);
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: 0.05em;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  border-radius: 0;
+  border: 3px solid #000;
+  padding: 0.7em 1.5em;
   font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  background-color: var(--secondary-fg);
+  color: #000;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
 }
 button:hover {
-  border-color: #646cff;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+  background-color: var(--primary-light);
+}
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid var(--primary-light);
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: light) {

@@ -264,10 +264,10 @@ export function registerComponent(name, nodes, wires, inputPinMap, outputPinMap)
     nodes: clonedNodes,
     wires: clonedWires,
   };
-
+ 
   localStorage.setItem("customComponents", JSON.stringify(customComponentRegistry));
 }
-
+ 
 export function loadSavedComponents() {
   const saved = localStorage.getItem("customComponents");
   if (saved) Object.assign(customComponentRegistry, JSON.parse(saved));

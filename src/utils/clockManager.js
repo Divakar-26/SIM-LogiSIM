@@ -70,14 +70,14 @@ function scheduleTick(nodeId, hz, duty, currentPhase) {
         if (_onChange) _onChange(nodeId, nextPhase);
 
         // Check if node still exists & params unchanged before rescheduling
-        const p = params.get(nodeId);
+        const p = params.get(nodeId); 
         if (p) scheduleTick(nodeId, p.hz, p.duty, nextPhase);
     }, delay);
 
     timers.set(nodeId, tid);
 }
 
-/** Stop all running clock timers (e.g. on unmount). */
+/** Stop all running clock timers (e.g. on unmount). */ 
 export function stopAllClocks() {
     for (const tid of timers.values()) clearTimeout(tid);
     timers.clear();

@@ -21,4 +21,4 @@ export function getPinPosition(node, pin, isOutput) {
     const y = node.y + pinY(pin.index, total, height);
     const x = isOutput ? node.x + width : node.x;
     return { x, y };
-} 
+}   

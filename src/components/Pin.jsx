@@ -50,4 +50,4 @@ function Pin({ type, index, total, nodeHeight, nodeId, onPinClick, label }) {
     );
 }
 
-export default Pin;
+export default Pin;  

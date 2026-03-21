@@ -17,6 +17,7 @@ export const defaultSettings = {
   gateNotColor:       "#b85a10",
   gridColor:          "#2a2a2a",
   bgColor:            "#111111",
+  theme:              "golden",
 };
 
 const KEY = "logic-sim-settings";
@@ -54,5 +55,5 @@ export function SettingsProvider({ children }) {
 }
 
 export function useSettings() {
-  return useContext(SettingsContext);
-}
+  return useContext(SettingsContext); 
+} 

@@ -174,13 +174,13 @@ function ClockConfig({ node, x, y, onSave, onClose }) {
                 )}
             </div>
 
-            {/* ── buttons ── */}
+            {/* ── buttons ── */} 
             <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
                 <button onClick={onClose} style={{
                     flex: 1, padding: "7px 0", borderRadius: 6,
                     border: "1px solid #45475a", background: "transparent",
                     color: "#cdd6f4", cursor: "pointer", fontSize: 12,
-                }}>Cancel</button>
+                }}>Cancel</button> 
                 <button onClick={handleSave} disabled={!valid} style={{
                     flex: 1, padding: "7px 0", borderRadius: 6,
                     border: "none",

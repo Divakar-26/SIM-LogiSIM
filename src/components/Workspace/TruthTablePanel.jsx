@@ -9,12 +9,12 @@ const OUTPUT_NAMES = ["Q", "S", "Cout", "Y", "Z", "W"];
 function getInputName(i, label)  { return label || INPUT_NAMES[i]  || `I${i}`; }
 function getOutputName(i, label) { return label || OUTPUT_NAMES[i] || `O${i}`; }
 
-function evalBuiltin(type, inputs) {
+function evalBuiltin(type, inputs) { 
     switch (type) {
         case "AND": return [inputs[0] & inputs[1]];
         case "OR":  return [inputs[0] | inputs[1]];
         case "NOT": return [inputs[0] ? 0 : 1];
-        default:    return [0];
+        default:    return [0]; 
     }
 }
 const BUILTIN = { AND: [2,1], OR: [2,1], NOT: [1,1] };

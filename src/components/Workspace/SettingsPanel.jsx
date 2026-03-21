@@ -2,10 +2,10 @@ import { useSettings } from "../../configs/SettingsContext";
 
 function Row({ label, hint, children }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "6px 0" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "8px 0" }}>
       <div>
-        <div style={{ fontSize: 12, color: "#cdd6f4", fontWeight: 500 }}>{label}</div>
-        {hint && <div style={{ fontSize: 10, color: "#45475a", marginTop: 1 }}>{hint}</div>}
+        <div style={{ fontSize: 13, color: "var(--primary-fg)", fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
+        {hint && <div style={{ fontSize: 11, color: "#ccc", marginTop: 1 }}>{hint}</div>}
       </div>
       <div style={{ flexShrink: 0 }}>{children}</div>
     </div>
@@ -17,19 +17,21 @@ function Toggle({ value, onChange }) {
     <div
       onClick={() => onChange(!value)}
       style={{
-        width: 36, height: 20, borderRadius: 10, cursor: "pointer",
-        background: value ? "#89b4fa" : "#313244",
-        border: `1px solid ${value ? "#89b4fa" : "#45475a"}`,
-        position: "relative", transition: "background 0.15s, border-color 0.15s",
+        width: 44, height: 24, borderRadius: 0, cursor: "pointer",
+        background: value ? "var(--primary-light)" : "var(--secondary-bg)",
+        border: `3px solid #000`,
+        position: "relative", transition: "all 0.15s",
         flexShrink: 0,
+        boxShadow: "2px 2px 0 rgba(0,0,0,0.2)",
       }}
     >
       <div style={{
         position: "absolute", top: 2,
-        left: value ? 17 : 2,
-        width: 14, height: 14, borderRadius: "50%",
-        background: value ? "#1e1e2e" : "#6c7086",
+        left: value ? 20 : 2,
+        width: 12, height: 12, borderRadius: 0,
+        background: value ? "#000" : "var(--secondary-fg)",
         transition: "left 0.15s",
+        border: "2px solid #000",
       }} />
     </div>
   );
@@ -37,15 +39,16 @@ function Toggle({ value, onChange }) {
 
 function ColorPicker({ value, onChange }) {
   return (
-    <div style={{ position: "relative", width: 28, height: 20 }}>
+    <div style={{ position: "relative", width: 32, height: 24 }}>
       <div style={{
-        width: 28, height: 20, borderRadius: 4,
-        background: value,
-        border: "1px solid #45475a",
+        width: 32, height: 24, borderRadius: 0,
+        background: value, 
+        border: "3px solid #000",
         cursor: "pointer",
+        boxShadow: "2px 2px 0 rgba(0,0,0,0.2)",
       }} />
       <input
-        type="color"
+        type="color" 
         value={value}
         onChange={e => onChange(e.target.value)}
         style={{
@@ -63,9 +66,11 @@ function Select({ value, onChange, options }) {
       value={value}
       onChange={e => onChange(e.target.value)}
       style={{
-        background: "#313244", border: "1px solid #45475a",
-        borderRadius: 5, color: "#cdd6f4", fontSize: 11,
-        padding: "3px 6px", cursor: "pointer", outline: "none",
+        background: "var(--secondary-fg)", border: "3px solid #000",
+        borderRadius: 0, color: "#000", fontSize: 12,
+        padding: "5px 8px", cursor: "pointer", outline: "none",
+        fontWeight: 700, textTransform: "uppercase",
+        boxShadow: "2px 2px 0 rgba(0,0,0,0.2)",
       }}
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -75,13 +80,13 @@ function Select({ value, onChange, options }) {
 
 function Slider({ value, onChange, min, max, step, format }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <input
         type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(Number(e.target.value))}
-        style={{ width: 80, accentColor: "#89b4fa" }}
+        style={{ width: 90, accentColor: "var(--primary-light)" }}
       />
-      <span style={{ fontSize: 10, color: "#6c7086", minWidth: 24, textAlign: "right" }}>
+      <span style={{ fontSize: 11, color: "var(--primary-fg)", minWidth: 28, textAlign: "right", fontWeight: 700 }}>
         {format ? format(value) : value}
       </span>
     </div>
@@ -91,11 +96,11 @@ function Slider({ value, onChange, min, max, step, format }) {
 function Section({ title }) {
   return (
     <div style={{
-      fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-      letterSpacing: "0.08em", color: "#45475a",
-      padding: "12px 0 4px",
-      borderTop: "1px solid #313244",
-      marginTop: 4,
+      fontSize: 11, fontWeight: 900, textTransform: "uppercase",
+      letterSpacing: "0.1em", color: "var(--primary-light)",
+      padding: "14px 0 6px",
+      borderTop: "2px solid #000",
+      marginTop: 6,
     }}>{title}</div>
   );
 }
@@ -109,7 +114,7 @@ function SettingsPanel({ onClose }) {
     <div
       style={{
         position: "fixed", inset: 0,
-        background: "rgba(0,0,0,0.55)",
+        background: "rgba(0,0,0,0.8)",
         display: "flex", alignItems: "center", justifyContent: "center",
         zIndex: 4000,
       }}
@@ -117,45 +122,65 @@ function SettingsPanel({ onClose }) {
     >
       <div
         style={{
-          background: "#1e1e2e", border: "1px solid #313244",
-          borderRadius: 12, boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
-          width: 380, maxHeight: "80vh",
+          background: "var(--secondary-bg)", border: "4px solid #000",
+          borderRadius: 0, boxShadow: "8px 8px 0 rgba(0,0,0,0.4)",
+          width: 420, maxHeight: "80vh",
           display: "flex", flexDirection: "column",
           overflow: "hidden",
+          fontFamily: "'Courier New', monospace",
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 18px 12px", borderBottom: "1px solid #313244", flexShrink: 0,
+          padding: "16px 18px 14px", borderBottom: "3px solid #000", flexShrink: 0,
+          background: "var(--primary-light)",
         }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#cdd6f4" }}>Settings</span>
+          <span style={{ fontSize: 16, fontWeight: 900, color: "#000", textTransform: "uppercase", letterSpacing: "0.08em" }}>SETTINGS</span>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button
               onClick={resetSettings}
               style={{
-                background: "transparent", border: "1px solid #45475a",
-                borderRadius: 5, color: "#6c7086", cursor: "pointer",
-                fontSize: 10, padding: "3px 8px", fontWeight: 600,
+                background: "var(--secondary-fg)", border: "3px solid #000",
+                borderRadius: 0, color: "#000", cursor: "pointer",
+                fontSize: 11, padding: "6px 10px", fontWeight: 700,
+                textTransform: "uppercase",
+                boxShadow: "2px 2px 0 rgba(0,0,0,0.2)",
+                transition: "all 0.1s",
               }}
-              onMouseEnter={e => e.currentTarget.style.color = "#cdd6f4"}
-              onMouseLeave={e => e.currentTarget.style.color = "#6c7086"}
+              onMouseEnter={e => {e.target.style.background="var(--primary-dark)"; e.target.style.boxShadow="3px 3px 0 rgba(0,0,0,0.3)"}}
+              onMouseLeave={e => {e.target.style.background="var(--secondary-fg)"; e.target.style.boxShadow="2px 2px 0 rgba(0,0,0,0.2)"}}
             >Reset</button>
             <button
               onClick={onClose}
               style={{
-                background: "transparent", border: "none", color: "#6c7086",
-                cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "0 2px",
+                background: "transparent", border: "none", color: "#000",
+                cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px",
+                fontWeight: 900,
               }}
-              onMouseEnter={e => e.currentTarget.style.color = "#cdd6f4"}
-              onMouseLeave={e => e.currentTarget.style.color = "#6c7086"}
+              onMouseEnter={e => e.currentTarget.style.color = "var(--primary-dark)"}
+              onMouseLeave={e => e.currentTarget.style.color = "#000"}
             >✕</button>
           </div>
         </div>
 
         {/* Body */}
-        <div style={{ overflowY: "auto", padding: "4px 18px 16px", flex: 1 }}>
+        <div style={{ overflowY: "auto", padding: "8px 18px 16px", flex: 1 }}>
+
+          <Section title="Theme" />
+          <Row label="Color Palette">
+            <Select value={settings.theme} onChange={set("theme")}
+              options={[
+                { value: "golden", label: "GOLDEN" },
+                { value: "purple", label: "PURPLE" },
+                { value: "crimson", label: "CRIMSON" },
+                { value: "mystique", label: "MYSTIQUE" },
+                { value: "sunset", label: "SUNSET" },
+                { value: "forest", label: "FOREST" },
+              ]}
+            />
+          </Row>
 
           <Section title="Interface" />
           <Row label="Show toolbar" hint="Top center tool buttons">
@@ -169,7 +194,7 @@ function SettingsPanel({ onClose }) {
           </Row>
           <Row label="Wire style">
             <Select value={settings.wireStyle} onChange={set("wireStyle")}
-              options={[{ value: "bezier", label: "Bezier" }, { value: "straight", label: "Straight" }]}
+              options={[{ value: "bezier", label: "BEZIER" }, { value: "straight", label: "STRAIGHT" }]}
             />
           </Row>
           <Row label="Zoom sensitivity">

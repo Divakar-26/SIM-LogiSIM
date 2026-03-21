@@ -1,21 +1,23 @@
 .pin {
     width: 10px;
     height: 10px;
-    background: #2a2a3a;
-    border-radius: 50%;
-    border: 2px solid #64748b;
+    background: var(--primary-light);
+    border-radius: 0;
+    border: 3px solid #000;
     cursor: crosshair;
     box-sizing: border-box;
     flex-shrink: 0;
-    transition: background 0.1s, border-color 0.1s, box-shadow 0.1s;
+    transition: all 0.1s;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .pin:hover {
-    background: #f8fafc;
-    border-color: #89b4fa;
-    box-shadow: 0 0 0 3px rgba(137,180,250,0.25);
+    background: var(--primary-dark);
+    border-color: #000;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+    transform: translate(-1px, -1px);
     cursor: pointer;
 }
 
 .pin-input  { margin-left:  -5px; }
-.pin-output { margin-right: -5px; } 
+.pin-output { margin-right: -5px; }  

@@ -1,11 +1,11 @@
 .sidebar {
     width: 160px;
     min-width: 160px;
-    background: #1e1e2e;
-    color: #cdd6f4;
+    background: var(--secondary-bg);
+    color: var(--primary-fg);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #313244;
+    border-right: 4px solid #000;
     height: 100vh;
     box-sizing: border-box;
     padding: 12px 0 0 0;
@@ -14,10 +14,11 @@
 .sidebar h3 {
     margin: 0 0 8px 0;
     padding: 0 12px;
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6c7086;
+    letter-spacing: 0.12em;
+    color: var(--primary-fg);
+    font-weight: 900;
 }
 
 /* Scrollable middle area */
@@ -32,14 +33,15 @@
 }
 
 .sidebar-scroll::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
 }
 .sidebar-scroll::-webkit-scrollbar-track {
     background: transparent;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
-    background: #45475a;
-    border-radius: 2px;
+    background: #000;
+    border-radius: 0;
+    border: 2px solid #2a2825;
 }
 
 /* Folders */
@@ -53,30 +55,34 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    padding: 5px 8px;
+    padding: 7px 8px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 0;
+    border: 2px solid #000;
     user-select: none;
-    transition: background 0.1s;
+    transition: all 0.1s;
+    background: var(--primary-bg);
+    font-weight: 700;
 }
 
 .sidebar-folder-header:hover {
-    background: #252535;
+    background: var(--secondary-bg);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-folder-arrow {
     font-size: 10px;
-    color: #6c7086;
+    color: var(--primary-fg);
     width: 10px;
     flex-shrink: 0;
 }
 
 .sidebar-folder-label {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: #89b4fa;
+    letter-spacing: 0.1em;
+    color: var(--primary-light);
 }
 
 .sidebar-folder-body {
@@ -88,20 +94,26 @@
 
 
 .sidebar-item {
-    padding: 7px 10px;
-    border-radius: 6px;
+    padding: 8px 10px;
+    border-radius: 0;
+    border: 2px solid #000;
     cursor: pointer;
-    font-size: 13px;
-    color: #cdd6f4;
+    font-size: 12px;
+    color: #000;
     user-select: none;
-    transition: background 0.1s;
+    transition: all 0.1s;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    background: var(--secondary-fg);
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 .sidebar-item:hover {
-    background: #313244;
+    background: var(--primary-light);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+    transform: translate(-1px, -1px);
 }
 
 .sidebar-item-custom {
@@ -127,14 +139,15 @@
     flex-shrink: 0;
     background: transparent;
     border: none;
-    color: #6c7086;
+    color: #000;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0 4px;
-    border-radius: 4px;
+    border-radius: 0;
     line-height: 1;
     opacity: 0;
     transition: opacity 0.1s, background 0.1s;
+    font-weight: 700;
 }
 
 .sidebar-item-custom:hover .sidebar-item-menu-btn {
@@ -142,25 +155,30 @@
 }
 
 .sidebar-item-menu-btn:hover {
-    background: #45475a;
-    color: #cdd6f4;
+    background: var(--primary-dark);
+    color: #000;
 }
 
 /* Save button pinned at bottom */
 .sidebar-save {
     flex-shrink: 0;
-    margin: 8px;
-    padding: 9px;
-    background: #313244;
-    color: #89b4fa;
-    border: 1px solid #45475a;
-    border-radius: 7px;
+    margin: 8px; 
+    padding: 10px;
+    background: var(--primary-light);
+    color: #000;
+    border: 3px solid #000;
+    border-radius: 0;
     cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: background 0.15s;
+    font-size: 12px;
+    font-weight: 900;
+    transition: all 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-save:hover {
-    background: #45475a;
+    background: var(--primary-dark);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+    transform: translate(-2px, -2px);
 }

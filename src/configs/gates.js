@@ -43,6 +43,6 @@ function customColor(name) {
 Object.keys(customComponentRegistry).forEach(name => {
     if (!gateColors[name]) gateColors[name] = customColor(name);
 });
-
+ 
 export { customColor };
-export const sidebarItems = ["SWITCH", "CLOCK", "LED", "AND", "OR", "NOT"];
+export const sidebarItems = ["SWITCH", "CLOCK", "LED", "AND", "OR", "NOT"]; 

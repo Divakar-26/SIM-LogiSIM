@@ -55,14 +55,14 @@ export function evalFlipFlop(type, prevNode, inputs) {
         else if (!j && k)   q = 0;
         // !j && !k = hold
       }
-      return mkResult(q, inputs[2]);
+      return mkResult(q, inputs[2]); 
     }
     case "TFF": {
       const [t, clk] = [inputs[0] ?? 0, inputs[1] ?? 0];
       if (rising(clk) && t) q = q ? 0 : 1;
       return mkResult(q, inputs[1]);
     }
-    default:
+    default: 
       return mkResult(q, 0);
   }
 

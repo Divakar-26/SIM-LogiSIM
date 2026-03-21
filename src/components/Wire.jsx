@@ -33,9 +33,9 @@ const Wire = memo(function Wire({ x1, y1, x2, y2, active, waypoints=[], activeCo
     p.y2            === n.y2            &&
     p.active        === n.active        &&
     p.activeColor   === n.activeColor   &&
-    p.inactiveColor === n.inactiveColor &&
+    p.inactiveColor === n.inactiveColor && 
     p.wireStyle     === n.wireStyle     &&
-    p.waypoints     === n.waypoints
+    p.waypoints     === n.waypoints 
 );
 
 export default Wire;

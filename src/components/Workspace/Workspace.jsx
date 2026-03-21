@@ -15,30 +15,32 @@ import { customComponentRegistry } from "../../configs/customComponents";
 
 const GRID = 20;
 const REGION_PAD = 22;
+const PIN_R = 7;
 
 function ToolBtn({ active, onClick, title, children }) {
     return (
         <button title={title} onClick={onClick} style={{
-            width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",
-            background:active?"rgba(137,180,250,0.15)":"transparent",
-            border:active?"1px solid rgba(137,180,250,0.5)":"1px solid transparent",
-            borderRadius:7,color:active?"#89b4fa":"#6c7086",
-            cursor:"pointer",fontSize:17,transition:"all 0.12s",flexShrink:0,
+            width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",
+            background:active?"var(--primary-light)":"var(--primary-bg)",
+            border:active?"3px solid #000":"3px solid #000",
+            borderRadius:0,color:active?"#000":"var(--primary-fg)",
+            cursor:"pointer",fontSize:18,transition:"all 0.12s",flexShrink:0,fontWeight:900,
+            boxShadow:active?"4px 4px 0 rgba(0,0,0,0.3)":"2px 2px 0 rgba(0,0,0,0.2)",
         }}
-            onMouseEnter={e=>{if(!active)e.currentTarget.style.background="rgba(255,255,255,0.05)";}}
-            onMouseLeave={e=>{if(!active)e.currentTarget.style.background="transparent";}}
+            onMouseEnter={e=>{if(!active){e.currentTarget.style.background="var(--secondary-bg)"; e.currentTarget.style.boxShadow="3px 3px 0 rgba(0,0,0,0.3)";}}}
+            onMouseLeave={e=>{if(!active){e.currentTarget.style.background="var(--primary-bg)"; e.currentTarget.style.boxShadow="2px 2px 0 rgba(0,0,0,0.2)";}}}
         >{children}</button>
     );
 }
 
 function GhostNode({ type, x, y, width, height }) {
     const isIO = ["SWITCH","LED","CLOCK"].includes(type);
-    const COLORS = {SWITCH:"#1a7a40",LED:"#a01020",CLOCK:"#1a2a3a",AND:"#1a5fa0",OR:"#6b2fa0",NOT:"#b85a10"};
+    const COLORS = {SWITCH:"#4a9eff",LED:"#ff6b35",CLOCK:"#87ceeb",AND:"#4a9eff",OR:"#ff6b9d",NOT:"var(--primary-light)"};
     const cc = customComponentRegistry[type];
-    const bg = COLORS[type]||gateColors[type]||(cc?"#3d2b8e":"#3d2b8e");
+    const bg = COLORS[type]||gateColors[type]||(cc?"#4a9eff":"#4a9eff");
     return (
-        <div style={{position:"absolute",left:x,top:y,width,height,borderRadius:isIO?"50%":6,background:bg,border:"2px dashed rgba(137,180,250,0.7)",opacity:0.55,display:"flex",alignItems:"center",justifyContent:"center",boxSizing:"border-box",pointerEvents:"none",userSelect:"none"}}>
-            {!isIO&&<span style={{fontSize:type.length>6?8:11,fontWeight:800,color:"rgba(255,255,255,0.85)",textTransform:"uppercase",padding:"0 4px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:width-8}}>{type}</span>}
+        <div style={{position:"absolute",left:x,top:y,width,height,borderRadius:isIO?"0":"0",background:bg,border:"3px dashed #000",opacity:0.65,display:"flex",alignItems:"center",justifyContent:"center",boxSizing:"border-box",pointerEvents:"none",userSelect:"none"}}>
+            {!isIO&&<span style={{fontSize:type.length>6?9:12,fontWeight:900,color:"#000",textTransform:"uppercase",padding:"0 4px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:width-8}}>{type}</span>}
         </div>
     );
 }
@@ -49,19 +51,19 @@ function RegionPrompt({ x, y, onConfirm, onClose }) {
     useEffect(()=>{setTimeout(()=>inputRef.current?.focus(),30);},[]);
     const top = Math.min(y, window.innerHeight-130);
     return (
-        <div style={{position:"fixed",left:x,top,zIndex:3000,background:"#1e1e2e",border:"1px solid #45475a",borderRadius:9,padding:"12px 14px",width:210,boxShadow:"0 6px 24px rgba(0,0,0,0.6)",display:"flex",flexDirection:"column",gap:10,userSelect:"none"}}
+        <div style={{position:"fixed",left:x,top,zIndex:3000,background:"var(--primary-bg)",border:"3px solid #000",borderRadius:0,padding:"14px 16px",width:230,boxShadow:"6px 6px 0 rgba(0,0,0,0.4)",display:"flex",flexDirection:"column",gap:10,userSelect:"none"}}
             onClick={e=>e.stopPropagation()} onMouseDown={e=>e.stopPropagation()}>
-            <div style={{fontSize:11,fontWeight:700,color:"#cdd6f4",letterSpacing:"0.05em"}}>Name region</div>
+            <div style={{fontSize:12,fontWeight:900,color:"var(--primary-light)",letterSpacing:"0.1em",textTransform:"uppercase"}}>NAME REGION</div>
             <input ref={inputRef} value={val} onChange={e=>setVal(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter")onConfirm(val);if(e.key==="Escape")onClose();}}
                 placeholder="e.g. ALU, Decoder…"
-                style={{padding:"6px 9px",borderRadius:6,fontSize:12,border:"1px solid #45475a",background:"#181825",color:"#cdd6f4",outline:"none",width:"100%",boxSizing:"border-box"}}
-                onFocus={e=>e.currentTarget.style.borderColor="#89b4fa"}
-                onBlur={e=>e.currentTarget.style.borderColor="#45475a"}
+                style={{padding:"8px 10px",borderRadius:0,fontSize:12,border:"3px solid #000",background:"var(--primary-fg)",color:"#000",outline:"none",width:"100%",boxSizing:"border-box",fontWeight:700}}
+                onFocus={e=>e.currentTarget.style.boxShadow="inset 0 0 0 2px var(--primary-dark)"}
+                onBlur={e=>e.currentTarget.style.boxShadow="none"}
             />
             <div style={{display:"flex",gap:8}}>
-                <button onClick={onClose} style={{flex:1,padding:"6px 0",borderRadius:6,border:"1px solid #45475a",background:"transparent",color:"#cdd6f4",cursor:"pointer",fontSize:12}}>Cancel</button>
-                <button onClick={()=>onConfirm(val)} style={{flex:1,padding:"6px 0",borderRadius:6,border:"none",background:"#89b4fa",color:"#1e1e2e",fontWeight:700,cursor:"pointer",fontSize:12}}>Add</button>
+                <button onClick={onClose} style={{flex:1,padding:"8px 0",borderRadius:0,border:"3px solid #000",background:"var(--secondary-bg)",color:"var(--primary-fg)",cursor:"pointer",fontSize:12,fontWeight:900,textTransform:"uppercase",boxShadow:"2px 2px 0 rgba(0,0,0,0.2)",transition:"all 0.1s"}} onMouseEnter={e=>{e.target.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"; e.target.style.transform="translate(-2px, -2px)"}} onMouseLeave={e=>{e.target.style.boxShadow="2px 2px 0 rgba(0,0,0,0.2)"; e.target.style.transform="none"}}>Cancel</button>
+                <button onClick={()=>onConfirm(val)} style={{flex:1,padding:"8px 0",borderRadius:0,border:"3px solid #000",background:"var(--primary-light)",color:"#000",fontWeight:900,cursor:"pointer",fontSize:12,textTransform:"uppercase",boxShadow:"2px 2px 0 rgba(0,0,0,0.2)",transition:"all 0.1s"}} onMouseEnter={e=>{e.target.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"; e.target.style.transform="translate(-2px, -2px)"}} onMouseLeave={e=>{e.target.style.boxShadow="2px 2px 0 rgba(0,0,0,0.2)"; e.target.style.transform="none"}}>Add</button>
             </div>
         </div>
     );
@@ -114,23 +116,25 @@ function Workspace({
     nodes, setNodes, wires, setWires,
     regions, setRegions,
     pendingTypes, onPlacePending, onCancelPending,
-    clipboardRef,   // ← lifted to App so clipboard survives tab switches
+    clipboardRef,
 }) {
     const workspaceRef   = useRef(null);
     const cameraLayerRef = useRef(null);
-    const gridRef        = useRef(null);   // ← infinite grid, updated directly in applyCameraDOM
+    const gridRef        = useRef(null);
     const cameraRef      = useRef({x:0,y:0,zoom:1});
     const isPanningRef   = useRef(false);
     const panStartRef    = useRef({x:0,y:0});
     const activeWireRef  = useRef(null);
     const wiresRef       = useRef(wires);
     const nodesRef       = useRef(nodes);
+    const regionsRef     = useRef(regions);
     const selectedRef    = useRef([]);
     const settingsRef    = useRef(null);
     const toolRef        = useRef("select");
 
     useEffect(()=>{wiresRef.current=wires;},[wires]);
     useEffect(()=>{nodesRef.current=nodes;},[nodes]);
+    useEffect(()=>{regionsRef.current=regions;},[regions]);
 
     const [camera,setCamera]                       = useState({x:0,y:0,zoom:1});
     const [tool,setTool]                           = useState("select");
@@ -140,6 +144,7 @@ function Workspace({
     const [selectedNodes,setSelectedNodes]         = useState([]);
     const [selectionBox,setSelectionBox]           = useState(null);
     const [nodeMenu,setNodeMenu]                   = useState(null);
+    const [regionMenu,setRegionMenu]               = useState(null);
     const [truthTableType,setTruthTableType]       = useState(null);
     const [clockConfig,setClockConfig]             = useState(null);
     const [ghostWorldPos,setGhostWorldPos]         = useState(null);
@@ -158,6 +163,16 @@ function Workspace({
 
     const selectedSet = useMemo(()=>new Set(selectedNodes),[selectedNodes]);
 
+    // All switch/LED IDs hidden inside compound regions
+    const compoundHiddenIds = useMemo(()=>{
+        const ids=new Set();
+        (regions||[]).filter(r=>r.isCompound).forEach(r=>{
+            (r.inputNodeIds||[]).forEach(id=>ids.add(id));
+            (r.outputNodeIds||[]).forEach(id=>ids.add(id));
+        });
+        return ids;
+    },[regions]);
+
     const nodeColors = useMemo(()=>{
         const m=new Map();
         nodes.forEach(n=>{
@@ -175,7 +190,7 @@ function Workspace({
         return m;
     },[nodes,settings]);
 
-    // ── Propagation fingerprint ───────────────────────────────────────────────
+    // ── Propagation ───────────────────────────────────────────────────────────
     const prevSigRef = useRef('');
     useEffect(()=>{
         const nodeSig=nodes.map(n=>`${n.id}:${n.value}:${(n.outputs||[]).join(',')}`).join('|');
@@ -183,29 +198,19 @@ function Workspace({
         const sig=nodeSig+'~'+wireSig;
         if(sig===prevSigRef.current)return;
         const newNodes=propagate(nodes,wires);
-        // Three-way split:
-        //  valOutChanged  → value or outputs changed: clear sig, re-propagate after save
-        //  stateOnlyChanged → only internalState changed (e.g. master latch updated but
-        //                     FF output same): save to React state but DON'T clear sig —
-        //                     no need to re-propagate, but the state must survive to the
-        //                     next input event.  Without this, feedback compounds forget
-        //                     their history whenever output happens to stay the same.
-        //  neither         → truly nothing changed: cache sig, skip setNodes entirely
         let valOutChanged=false, stateOnlyChanged=false;
         const merged=nodes.map(orig=>{
             const n=newNodes.find(x=>x.id===orig.id);
             if(!n)return orig;
             const vEq=n.value===orig.value;
             const oEq=n.outputs===orig.outputs||((!n.outputs&&!orig.outputs)||(n.outputs&&orig.outputs&&n.outputs.length===orig.outputs.length&&n.outputs.every((v,i)=>v===orig.outputs[i])));
-            // Reference check is sufficient: propagate only creates a new internalState
-            // object when internalStateEq() detected actual content change.
             const iEq=n.internalState===orig.internalState;
             if(vEq&&oEq&&iEq)return orig;
             if(!vEq||!oEq)valOutChanged=true; else stateOnlyChanged=true;
             return n;
         });
         if(valOutChanged){prevSigRef.current='';setNodes(merged);}
-        else if(stateOnlyChanged){setNodes(merged);}  // persist internalState, no re-propagation needed
+        else if(stateOnlyChanged){setNodes(merged);}
         else prevSigRef.current=sig;
     },[nodes,wires]);
 
@@ -223,9 +228,6 @@ function Workspace({
     useEffect(()=>{syncClocks(nodes);},[nodes]);
 
     // ── Camera + infinite grid ────────────────────────────────────────────────
-    // applyCameraDOM writes to three DOM elements simultaneously — zero React re-renders:
-    //   1. cameraLayerRef  — transform for nodes/wires
-    //   2. gridRef         — background-position/size for infinite tiling grid
     const applyCameraDOM = (cam) => {
         cameraRef.current = cam;
         if (cameraLayerRef.current)
@@ -271,7 +273,6 @@ function Workspace({
         applyCameraDOM(cam);setCamera(cam);
     },[focusOrigin]);
 
-    // Keep grid in sync when settings (grid color/visibility) change without pan
     useEffect(()=>{applyCameraDOM(cameraRef.current);},[settings.showGrid,settings.gridColor,settings.bgColor]);
 
     // ── Stable callbacks ──────────────────────────────────────────────────────
@@ -346,67 +347,173 @@ function Workspace({
         }));
     },[]);
 
-    // ── Join: smart-wire selected switches/LEDs → selected circuit's pins ──────
-    // Rules (sorted top-to-bottom by Y position):
-    //   switches selected + circuit     → wire each switch output → circuit input i
-    //   LEDs selected    + circuit     → wire each circuit output i → LED input
-    //   switches + LEDs  + circuit     → both of the above
-    // Any count mismatch on one side is silently skipped (partial join is fine).
+    // ── Join ──────────────────────────────────────────────────────────────────
     const handleJoin = useCallback(()=>{
         const sel = selectedRef.current;
         if (sel.length < 2) return;
         const allNodes = nodesRef.current;
         const selNodes = allNodes.filter(n => sel.includes(n.id));
-
         const switches  = selNodes.filter(n => n.type === 'SWITCH').sort((a,b)=>a.y-b.y);
         const leds      = selNodes.filter(n => n.type === 'LED').sort((a,b)=>a.y-b.y);
-        // Circuit = the one non-IO node in the selection (there must be exactly one)
         const circuits  = selNodes.filter(n =>
             n.type !== 'SWITCH' && n.type !== 'LED' &&
             n.type !== 'JUNCTION' && n.type !== 'CLOCK'
         );
         if (circuits.length !== 1) return;
         const circuit = circuits[0];
-
         const cc  = customComponentRegistry[circuit.type];
         const cfg = gateConfig[circuit.type] || {
             inputs:  cc?.inputPinMap?.length  ?? 2,
             outputs: cc?.outputPinMap?.length ?? 1,
         };
-
         const currentWires = wiresRef.current;
         const newWires = [];
-
-        // switches → input pins (by sorted Y order: topmost switch → pin 0)
         switches.forEach((sw, i) => {
             if (i >= cfg.inputs) return;
-            const dup = currentWires.some(w =>
-                w.from.nodeId === sw.id && w.to.nodeId === circuit.id && w.to.index === i
-            );
-            if (!dup) newWires.push({
-                id: wid(),
-                from: { nodeId: sw.id,      index: 0, total: 1          },
-                to:   { nodeId: circuit.id, index: i, total: cfg.inputs  },
-            });
+            const dup = currentWires.some(w => w.from.nodeId===sw.id && w.to.nodeId===circuit.id && w.to.index===i);
+            if (!dup) newWires.push({ id:wid(), from:{nodeId:sw.id,index:0,total:1}, to:{nodeId:circuit.id,index:i,total:cfg.inputs} });
         });
-
-        // output pins → LEDs (by sorted Y order: topmost LED ← output pin 0)
         leds.forEach((led, i) => {
             if (i >= cfg.outputs) return;
-            const dup = currentWires.some(w =>
-                w.from.nodeId === circuit.id && w.from.index === i && w.to.nodeId === led.id
-            );
-            if (!dup) newWires.push({
-                id: wid(),
-                from: { nodeId: circuit.id, index: i, total: cfg.outputs },
-                to:   { nodeId: led.id,     index: 0, total: 1           },
-            });
+            const dup = currentWires.some(w => w.from.nodeId===circuit.id && w.from.index===i && w.to.nodeId===led.id);
+            if (!dup) newWires.push({ id:wid(), from:{nodeId:circuit.id,index:i,total:cfg.outputs}, to:{nodeId:led.id,index:0,total:1} });
         });
-
         if (newWires.length) setWires(prev => [...prev, ...newWires]);
     }, []);
 
-    // ── Copy / Paste — uses clipboardRef from App (cross-tab) ─────────────────
+    // ── Make Compound ─────────────────────────────────────────────────────────
+    // For each switch: record its outgoing wire destinations, remove those wires.
+    // Switches/LEDs become hidden. Their signals are still simulated internally.
+    const handleMakeCompound = useCallback((regionId)=>{
+        const region = regionsRef.current?.find(r=>r.id===regionId);
+        if(!region) return;
+        const regionNodes = nodesRef.current.filter(n=>region.nodeIds.includes(n.id));
+        const switches = regionNodes.filter(n=>n.type==='SWITCH').sort((a,b)=>a.y-b.y);
+        const leds     = regionNodes.filter(n=>n.type==='LED').sort((a,b)=>a.y-b.y);
+        const currentWires = wiresRef.current;
+
+        // Save each switch's downstream gate connections
+        const inputWireTargets = switches.map(sw=>({
+            switchId: sw.id,
+            label:    sw.label || null,
+            targets:  currentWires
+                .filter(w=>w.from.nodeId===sw.id)
+                .map(w=>({nodeId:w.to.nodeId, index:w.to.index, total:w.to.total})),
+        }));
+
+        // Save each LED's upstream gate connection (for output pin "start wire" logic)
+        const outputWireSources = leds.map(led=>({
+            ledId:  led.id,
+            label:  led.label || null,
+            source: currentWires.find(w=>w.to.nodeId===led.id&&w.to.index===0)
+                ? {
+                    nodeId: currentWires.find(w=>w.to.nodeId===led.id&&w.to.index===0).from.nodeId,
+                    index:  currentWires.find(w=>w.to.nodeId===led.id&&w.to.index===0).from.index,
+                    total:  currentWires.find(w=>w.to.nodeId===led.id&&w.to.index===0).from.total,
+                  }
+                : null,
+        }));
+
+        // Remove switch → gate wires (replaced by external → input pin connections)
+        const switchIdSet = new Set(switches.map(s=>s.id));
+        setWires(prev=>prev.filter(w=>!switchIdSet.has(w.from.nodeId)));
+
+        if(setRegions) setRegions(prev=>prev.map(r=>
+            r.id===regionId
+            ? {
+                ...r,
+                isCompound:        true,
+                inputNodeIds:      switches.map(s=>s.id),
+                outputNodeIds:     leds.map(l=>l.id),
+                inputWireTargets,  // [{switchId, label, targets}]
+                outputWireSources, // [{ledId, label, source}]
+              }
+            : r
+        ));
+        setRegionMenu(null);
+    },[]);
+
+    // ── Remove Compound ───────────────────────────────────────────────────────
+    const handleRemoveCompound = useCallback((regionId)=>{
+        const region = regionsRef.current?.find(r=>r.id===regionId);
+        if(!region) return;
+        // Restore switch → gate wires
+        const restoredWires = (region.inputWireTargets||[]).flatMap(entry=>
+            entry.targets.map(t=>({
+                id:wid(),
+                from:{nodeId:entry.switchId, index:0, total:1},
+                to:t,
+            }))
+        );
+        if(restoredWires.length) setWires(prev=>[...prev,...restoredWires]);
+        if(setRegions) setRegions(prev=>prev.map(r=>
+            r.id===regionId
+            ? {...r, isCompound:false, inputNodeIds:undefined, outputNodeIds:undefined, inputWireTargets:undefined, outputWireSources:undefined}
+            : r
+        ));
+        setRegionMenu(null);
+    },[]);
+
+    // ── Compound pin click (called from the interactive pin SVG) ─────────────
+    //
+    // INPUT pin (left side — switch proxy):
+    //   • If a wire IS being dragged: connect it to all internal gate inputs this switch fed.
+    //   • If NO wire is being dragged: do nothing (input pins only receive).
+    //
+    // OUTPUT pin (right side — LED proxy):
+    //   • If NO wire is being dragged: start a wire from the gate that drives this LED.
+    //   • If a wire IS being dragged: ignore (output pins only send).
+    //
+    const handleCompoundPinClick = useCallback((e, regionId, pinIndex, isInput)=>{
+        e.stopPropagation();
+        if(toolRef.current==="erase") return;
+
+        const region = regionsRef.current?.find(r=>r.id===regionId);
+        if(!region) return;
+
+        const aw = activeWireRef.current;
+        const waypoints = [...(activeWireRef.current ? [] : [])]; // captured below properly
+
+        if(isInput){
+            // Receive an incoming wire → wire to all internal targets
+            if(!aw || aw.type!=="output") return;
+
+            const entry = (region.inputWireTargets||[])[pinIndex];
+            if(!entry) return;
+
+            const cur = wiresRef.current;
+            const newWires = (entry.targets||[])
+                .filter(t=>!cur.some(w=>
+                    w.from.nodeId===aw.nodeId && w.from.index===aw.index &&
+                    w.to.nodeId===t.nodeId   && w.to.index===t.index
+                ))
+                .map(t=>({
+                    id:wid(),
+                    from:{nodeId:aw.nodeId, index:aw.index, total:aw.total},
+                    to:t,
+                }));
+            if(newWires.length) setWires(prev=>[...prev,...newWires]);
+            setActiveWire(null);
+            setActiveWireWaypoints([]);
+
+        } else {
+            // Start a wire from the gate that drives this LED
+            if(aw) return;
+
+            const entry = (region.outputWireSources||[])[pinIndex];
+            if(!entry?.source) return;
+
+            setActiveWire({
+                type:   "output",
+                nodeId: entry.source.nodeId,
+                index:  entry.source.index,
+                total:  entry.source.total,
+            });
+            setActiveWireWaypoints([]);
+        }
+    },[]);
+
+    // ── Copy / Paste ──────────────────────────────────────────────────────────
     const handleCopy = useCallback(()=>{
         const sel=selectedRef.current;
         if(!sel.length)return;
@@ -433,7 +540,20 @@ function Workspace({
             to:{...w.to,nodeId:idMap.get(w.to.nodeId)??w.to.nodeId},
         }));
         const newRegions=(clipboardRef.current.regions||[]).map(r=>({
-            ...r,id:wid(),nodeIds:r.nodeIds.map(id=>idMap.get(id)??id),
+            ...r,id:wid(),
+            nodeIds:r.nodeIds.map(id=>idMap.get(id)??id),
+            inputNodeIds:r.inputNodeIds?.map(id=>idMap.get(id)??id),
+            outputNodeIds:r.outputNodeIds?.map(id=>idMap.get(id)??id),
+            inputWireTargets:r.inputWireTargets?.map(entry=>({
+                ...entry,
+                switchId:idMap.get(entry.switchId)??entry.switchId,
+                targets:entry.targets.map(t=>({...t,nodeId:idMap.get(t.nodeId)??t.nodeId})),
+            })),
+            outputWireSources:r.outputWireSources?.map(entry=>({
+                ...entry,
+                ledId:idMap.get(entry.ledId)??entry.ledId,
+                source:entry.source?{...entry.source,nodeId:idMap.get(entry.source.nodeId)??entry.source.nodeId}:null,
+            })),
         }));
         setNodes(prev=>[...prev,...newNodes]);
         setWires(prev=>[...prev,...newWires]);
@@ -487,7 +607,7 @@ function Workspace({
             if(document.activeElement.tagName==="INPUT")return;
             const mod=e.ctrlKey||e.metaKey;
             if(e.key==="Delete"||e.key==="Backspace")handleDeleteSelected();
-            if(e.key==="Escape"){cancelWire();setNodeMenu(null);setClockConfig(null);setTool("select");onCancelPending?.();setGhostWorldPos(null);setRegionPrompt(null);}
+            if(e.key==="Escape"){cancelWire();setNodeMenu(null);setRegionMenu(null);setClockConfig(null);setTool("select");onCancelPending?.();setGhostWorldPos(null);setRegionPrompt(null);}
             if(!mod&&(e.key==="f"||e.key==="F"))fitAll();
             if(!mod&&(e.key==="h"||e.key==="H"))focusOrigin();
             if(mod&&e.key==="c"){e.preventDefault();handleCopy();}
@@ -518,7 +638,7 @@ function Workspace({
             const hitWire=findWireAtWorldPoint(wx,wy,nodesRef.current,wiresRef.current,settings.wireStyle,cam.zoom);
             if(hitWire){
                 e.stopPropagation();
-                setNodeMenu(null);setSelectedNodes([]);
+                setNodeMenu(null);setRegionMenu(null);setSelectedNodes([]);
                 const snap=settings.snapToGrid?GRID:1;
                 const jId=wid();
                 const centerX=Math.round(wx/snap)*snap,centerY=Math.round(wy/snap)*snap;
@@ -535,7 +655,7 @@ function Workspace({
             }
         }
         if(e.button===0){
-            cancelWire();setNodeMenu(null);setClockConfig(null);setSelectedNodes([]);
+            cancelWire();setNodeMenu(null);setRegionMenu(null);setClockConfig(null);setSelectedNodes([]);
             if(tool==="select")setSelectionBox({startX:sx,startY:sy,endX:sx,endY:sy});
         }
     };
@@ -545,7 +665,7 @@ function Workspace({
         const sx=e.clientX-rect.left,sy=e.clientY-rect.top;
         if(isPanningRef.current){
             const cam={x:sx-panStartRef.current.x,y:sy-panStartRef.current.y,zoom:cameraRef.current.zoom};
-            applyCameraDOM(cam); // zero React re-renders, grid updates too
+            applyCameraDOM(cam);
             return;
         }
         if(selectionBox)setSelectionBox(prev=>prev?{...prev,endX:sx,endY:sy}:null);
@@ -584,14 +704,13 @@ function Workspace({
         applyCameraDOM(cam);setCamera(cam);
     };
 
+    // Right-click on canvas = add wire waypoint only. No region prompt here.
     const handleContextMenu=(e)=>{
         e.preventDefault();
         if(activeWireRef.current){
             const rect=workspaceRef.current.getBoundingClientRect();
             const wp=screenToWorld(e.clientX-rect.left,e.clientY-rect.top);
             setActiveWireWaypoints(prev=>[...prev,wp]);
-        }else if(selectedRef.current.length>=2){
-            setRegionPrompt({nodeIds:[...selectedRef.current],x:e.clientX,y:e.clientY});
         }
     };
 
@@ -627,6 +746,62 @@ function Workspace({
 
     const{wireActiveColor,wireInactiveColor,wireStyle}=settings;
 
+    // ── Build compound pin data for rendering ─────────────────────────────────
+    // Computed here so the interactive SVG can use it with correct world coords.
+    const compoundPinData = useMemo(()=>{
+        return (regions||[])
+            .filter(r=>r.isCompound)
+            .map(region=>{
+                const b = (() => {
+                    const sel = nodes.filter(n=>region.nodeIds.includes(n.id));
+                    if(!sel.length) return null;
+                    const xs=sel.map(n=>n.x),ys=sel.map(n=>n.y);
+                    const xe=sel.map(n=>{const cfg=gateConfig[n.type];const{width}=getNodeSize(n.type,cfg?.inputs??2,cfg?.outputs??1);return n.x+width;});
+                    const ye=sel.map(n=>{const cfg=gateConfig[n.type];const{height}=getNodeSize(n.type,cfg?.inputs??2,cfg?.outputs??1);return n.y+height;});
+                    return{x:Math.min(...xs)-REGION_PAD,y:Math.min(...ys)-REGION_PAD,w:Math.max(...xe)-Math.min(...xs)+REGION_PAD*2,h:Math.max(...ye)-Math.min(...ys)+REGION_PAD*2};
+                })();
+                if(!b) return null;
+
+                const inEntries  = region.inputWireTargets  || [];
+                const outEntries = region.outputWireSources || [];
+
+                const inputs = inEntries.map((entry, i)=>{
+                    // Active if any wire from external currently feeds any of this switch's targets
+                    const isActive = entry.targets.some(t=>{
+                        const dw = wires.find(w=>w.to.nodeId===t.nodeId&&w.to.index===t.index);
+                        if(!dw) return false;
+                        return nodeMap.get(dw.from.nodeId)?.value===1;
+                    });
+                    return {
+                        regionId: region.id,
+                        pinIndex: i,
+                        label: entry.label || `I${i}`,
+                        isActive,
+                        wx: b.x,
+                        wy: b.y + b.h*(i+1)/(inEntries.length+1),
+                    };
+                });
+
+                const outputs = outEntries.map((entry, i)=>{
+                    const ledNode  = nodeMap.get(entry.ledId);
+                    const isActive = ledNode?.value===1;
+                    const hasSource = !!entry.source;
+                    return {
+                        regionId: region.id,
+                        pinIndex: i,
+                        label: entry.label || `O${i}`,
+                        isActive,
+                        hasSource,
+                        wx: b.x + b.w,
+                        wy: b.y + b.h*(i+1)/(outEntries.length+1),
+                    };
+                });
+
+                return { regionId: region.id, inputs, outputs };
+            })
+            .filter(Boolean);
+    },[regions, nodes, wires, nodeMap]);
+
     return (
         <div style={{flex:1,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",height:"100%"}}>
 
@@ -640,9 +815,9 @@ function Workspace({
                 </div>
             )}
 
-            <button onClick={focusOrigin} title="Focus origin (H)" style={{position:"absolute",bottom:20,right:20,zIndex:100,width:40,height:40,borderRadius:"50%",background:"#1a1a2a",border:"1px solid #45475a",color:"#89b4fa",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 10px rgba(0,0,0,0.5)",transition:"border-color 0.15s, background 0.15s",fontSize:18}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#25253a";e.currentTarget.style.borderColor="#89b4fa";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="#1a1a2a";e.currentTarget.style.borderColor="#45475a";}}
+            <button onClick={focusOrigin} title="Focus origin (H)" style={{position:"absolute",bottom:20,right:20,zIndex:100,width:44,height:44,borderRadius:0,background:"var(--primary-light)",border:"3px solid #000",color:"#000",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"4px 4px 0 rgba(0,0,0,0.3)",transition:"all 0.15s",fontSize:20,fontWeight:900}}
+                onMouseEnter={e=>{e.currentTarget.style.background="var(--primary-dark)";e.currentTarget.style.boxShadow="6px 6px 0 rgba(0,0,0,0.4)"; e.currentTarget.style.transform="translate(-2px, -2px)"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="var(--primary-light)";e.currentTarget.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"; e.currentTarget.style.transform="none"}}
             >⌖</button>
 
             {truthTableType&&<TruthTablePanel type={truthTableType} onClose={()=>setTruthTableType(null)}/>}
@@ -655,21 +830,33 @@ function Workspace({
                 onMouseMove={handleMouseMove} onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp} onWheel={handleWheel} onContextMenu={handleContextMenu}
             >
-                {/* Infinite grid — lives in screen space, updated via DOM ref (zero React re-renders) */}
                 <div ref={gridRef} className="grid-layer" style={{pointerEvents:"none"}}/>
 
-                {/* Camera layer */}
+                {/* Camera layer — everything inside moves with pan/zoom */}
                 <div ref={cameraLayerRef} className="camera-layer" style={{
                     transform:`translate(${camera.x}px,${camera.y}px) scale(${camera.zoom})`,
                     transformOrigin:"0 0",position:"absolute",width:"100%",height:"100%",pointerEvents:"none",
                 }}>
-                    {/* Regions */}
+                    {/* Regions (background boxes + labels) */}
                     {(regions||[]).map(region=>{
                         const b=computeRegionBounds(region.nodeIds);
                         if(!b)return null;
+                        const isCompound=!!region.isCompound;
                         return(
-                            <div key={region.id} style={{position:"absolute",left:b.x,top:b.y,width:b.w,height:b.h,border:"2px dashed rgba(255,255,255,0.35)",borderRadius:10,background:"rgba(255,255,255,0.04)",boxShadow:"inset 0 0 0 1px rgba(137,180,250,0.18)",pointerEvents:"none",boxSizing:"border-box"}}>
-                                <div style={{position:"absolute",top:-26,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.72)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:6,padding:"3px 10px",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6,pointerEvents:"auto"}}>
+                            <div key={region.id} style={{
+                                position:"absolute",left:b.x,top:b.y,width:b.w,height:b.h,
+                                border:isCompound?"2px solid rgba(203,166,247,0.7)":"2px dashed rgba(255,255,255,0.35)",
+                                borderRadius:10,
+                                background:isCompound?"rgba(203,166,247,0.04)":"rgba(255,255,255,0.04)",
+                                boxShadow:isCompound
+                                    ?"inset 0 0 0 1px rgba(203,166,247,0.2),0 0 16px rgba(203,166,247,0.07)"
+                                    :"inset 0 0 0 1px rgba(137,180,250,0.18)",
+                                pointerEvents:"none",boxSizing:"border-box",
+                            }}>
+                                {/* Label bar — right-click to open region menu */}
+                                <div style={{position:"absolute",top:-26,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.72)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:6,padding:"3px 10px",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6,pointerEvents:"auto"}}
+                                    onContextMenu={e=>{e.preventDefault();e.stopPropagation();setRegionMenu({regionId:region.id,x:e.clientX,y:e.clientY});}}>
+                                    {isCompound&&<span style={{fontSize:9,fontWeight:700,color:"#cba6f7",background:"rgba(203,166,247,0.15)",borderRadius:3,padding:"1px 5px",letterSpacing:"0.06em"}}>COMPOUND</span>}
                                     <span style={{fontSize:11,fontWeight:600,color:"#e0e0e0",letterSpacing:"0.04em",userSelect:"none"}}>{region.label}</span>
                                     <span style={{fontSize:11,color:"#585b70",cursor:"pointer",lineHeight:1}}
                                         onMouseEnter={e=>e.currentTarget.style.color="#f38ba8"}
@@ -681,20 +868,24 @@ function Workspace({
                         );
                     })}
 
+                    {/* ── Wire SVG (pointer-events:none — purely visual) ── */}
                     <svg className="wire-layer" style={{pointerEvents:"none"}}>
-                        {wires.map(wire=>{
+                        {/* Normal wires — skip any connected to hidden compound switch/LED nodes */}
+                        {wires.filter(w=>!compoundHiddenIds.has(w.from.nodeId)&&!compoundHiddenIds.has(w.to.nodeId)).map(wire=>{
                             const n1=nodeMap.get(wire.from.nodeId),n2=nodeMap.get(wire.to.nodeId);
                             if(!n1||!n2)return null;
                             const p1=pinPos(n1,wire.from,true),p2=pinPos(n2,wire.to,false);
                             const wireActive=n1.type.startsWith("IN_")?(n1.outputs?.[wire.from.index]??0)===1:n1.value===1;
                             return <Wire key={wire.id} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} active={wireActive} waypoints={wire.waypoints||[]} activeColor={wireActiveColor} inactiveColor={wireInactiveColor} wireStyle={wireStyle}/>;
                         })}
+                        {/* Active wire preview */}
                         {activeWire&&(()=>{
                             const node=nodeMap.get(activeWire.nodeId);
                             if(!node)return null;
                             const p=pinPos(node,activeWire,true);
                             return <Wire x1={p.x} y1={p.y} x2={mousePos.x} y2={mousePos.y} active={false} waypoints={activeWireWaypoints} activeColor={wireActiveColor} inactiveColor={wireInactiveColor} wireStyle={wireStyle}/>;
                         })()}
+                        {/* Fan-out dots */}
                         {(()=>{
                             const srcMap={};
                             wires.forEach(w=>{
@@ -708,15 +899,35 @@ function Workspace({
                                 <circle key={i} cx={s.pos.x} cy={s.pos.y} r={4} fill={s.active?wireActiveColor:wireInactiveColor}/>
                             ));
                         })()}
+                        {/* Waypoint markers */}
                         {activeWireWaypoints.map((wp,i)=>(
                             <g key={`wpv-${i}`}>
                                 <circle cx={wp.x} cy={wp.y} r={5} fill="rgba(137,180,250,0.15)" stroke="#89b4fa" strokeWidth="1"/>
                                 <circle cx={wp.x} cy={wp.y} r={2} fill="#89b4fa"/>
                             </g>
                         ))}
+
+                        {/* ── Compound pin VISUALS (stub lines, no pointer events) ── */}
+                        {compoundPinData.map(({regionId, inputs, outputs})=>(
+                            <g key={`cvis-${regionId}`}>
+                                {inputs.map((p,i)=>(
+                                    <line key={`il-${i}`}
+                                        x1={p.wx-24} y1={p.wy} x2={p.wx} y2={p.wy}
+                                        stroke={p.isActive?wireActiveColor:wireInactiveColor}
+                                        strokeWidth="2.5"/>
+                                ))}
+                                {outputs.map((p,i)=>(
+                                    <line key={`ol-${i}`}
+                                        x1={p.wx} y1={p.wy} x2={p.wx+24} y2={p.wy}
+                                        stroke={p.isActive?wireActiveColor:wireInactiveColor}
+                                        strokeWidth="2.5"/>
+                                ))}
+                            </g>
+                        ))}
                     </svg>
 
-                    {nodes.map(node=>(
+                    {/* ── Nodes (skip hidden compound switches/LEDs) ── */}
+                    {nodes.filter(n=>!compoundHiddenIds.has(n.id)).map(node=>(
                         <Node
                             key={node.id}
                             id={node.id} type={node.type} x={node.x} y={node.y}
@@ -735,7 +946,78 @@ function Workspace({
                             eraseMode={tool==="erase"}
                         />
                     ))}
-                </div>
+
+                    {/* ── Compound pin INTERACTIVE SVG ──────────────────────────────────────
+                         This is a SEPARATE svg from wire-layer so pointer-events work.
+                         It sits on top inside the camera layer.                           ── */}
+                    <svg style={{
+                        position:"absolute",left:0,top:0,width:"100%",height:"100%",
+                        pointerEvents:"none",overflow:"visible",
+                    }}>
+                        {compoundPinData.map(({regionId, inputs, outputs})=>(
+                            <g key={`cpin-${regionId}`}>
+
+                                {/* INPUT pins */}
+                                {inputs.map((p,i)=>{
+                                    const col = p.isActive ? wireActiveColor : wireInactiveColor;
+                                    const receiving = activeWire?.type==="output";
+                                    return (
+                                        <g key={`in-${i}`}
+                                           style={{pointerEvents:"auto", cursor:"crosshair"}}
+                                           onMouseDown={e=>handleCompoundPinClick(e, regionId, i, true)}>
+                                            {/* Highlight ring when a wire is being dragged */}
+                                            {receiving&&<circle cx={p.wx} cy={p.wy} r={PIN_R+5}
+                                                fill="none" stroke="rgba(203,166,247,0.5)" strokeWidth="1.5"/>}
+                                            {/* Pin body */}
+                                            <circle cx={p.wx} cy={p.wy} r={PIN_R}
+                                                fill={receiving?"rgba(203,166,247,0.3)":col}
+                                                stroke="#cba6f7" strokeWidth="2"/>
+                                            {/* Arrow →  (input: wire enters here) */}
+                                            <polygon
+                                                points={`${p.wx-4},${p.wy-3.5} ${p.wx+3.5},${p.wy} ${p.wx-4},${p.wy+3.5}`}
+                                                fill={receiving?"#cba6f7":"rgba(0,0,0,0.6)"}
+                                                style={{pointerEvents:"none"}}/>
+                                            {/* Label */}
+                                            <text x={p.wx-28} y={p.wy+4} fontSize="10" fill="#a6adc8"
+                                                textAnchor="end" fontWeight="600"
+                                                style={{pointerEvents:"none",userSelect:"none"}}>{p.label}</text>
+                                        </g>
+                                    );
+                                })}
+
+                                {/* OUTPUT pins */}
+                                {outputs.map((p,i)=>{
+                                    const col = p.isActive ? wireActiveColor : wireInactiveColor;
+                                    const canStart = p.hasSource && !activeWire;
+                                    return (
+                                        <g key={`out-${i}`}
+                                           style={{pointerEvents:"auto", cursor: canStart?"crosshair":"default"}}
+                                           onMouseDown={e=>handleCompoundPinClick(e, regionId, i, false)}>
+                                            {/* Hover hint */}
+                                            {canStart&&<circle cx={p.wx} cy={p.wy} r={PIN_R+5}
+                                                fill="none" stroke="rgba(203,166,247,0.3)" strokeWidth="1"/>}
+                                            {/* Pin body */}
+                                            <circle cx={p.wx} cy={p.wy} r={PIN_R}
+                                                fill={canStart?"rgba(203,166,247,0.2)":col}
+                                                stroke="#cba6f7" strokeWidth="2"/>
+                                            {/* Arrow → (output: wire exits here) */}
+                                            <polygon
+                                                points={`${p.wx-3.5},${p.wy-3.5} ${p.wx+4},${p.wy} ${p.wx-3.5},${p.wy+3.5}`}
+                                                fill={canStart?"#cba6f7":"rgba(0,0,0,0.6)"}
+                                                style={{pointerEvents:"none"}}/>
+                                            {/* Label */}
+                                            <text x={p.wx+28} y={p.wy+4} fontSize="10" fill="#a6adc8"
+                                                textAnchor="start" fontWeight="600"
+                                                style={{pointerEvents:"none",userSelect:"none"}}>{p.label}</text>
+                                        </g>
+                                    );
+                                })}
+
+                            </g>
+                        ))}
+                    </svg>
+
+                </div>{/* end camera layer */}
 
                 {selectionBox&&(
                     <div style={{position:"absolute",left:Math.min(selectionBox.startX,selectionBox.endX),top:Math.min(selectionBox.startY,selectionBox.endY),width:Math.abs(selectionBox.endX-selectionBox.startX),height:Math.abs(selectionBox.endY-selectionBox.startY),border:"1px dashed #89b4fa",background:"rgba(137,180,250,0.08)",pointerEvents:"none"}}/>
@@ -743,15 +1025,18 @@ function Workspace({
 
                 {selectedNodes.length>1&&!pendingTypes?.length&&(
                     <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"#1a1a2a",color:"#a6adc8",fontSize:12,padding:"5px 12px",borderRadius:6,border:"1px solid #2a2a3e",pointerEvents:"none",display:"flex",gap:10,whiteSpace:"nowrap"}}>
-                        {selectedNodes.length} selected · Del to delete · Ctrl+C copy · right-click to group
+                        {selectedNodes.length} selected · Del to delete · Ctrl+C copy · Ctrl+G to group
                     </div>
                 )}
                 {activeWire&&!pendingTypes?.length&&(
                     <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"#1a1a2a",color:"#6c7086",fontSize:11,padding:"5px 12px",borderRadius:6,border:"1px solid #2a2a3e",pointerEvents:"none"}}>
                         Right-click to add pivot{activeWireWaypoints.length>0?` · ${activeWireWaypoints.length} pivot${activeWireWaypoints.length>1?'s':''}`:''} · Esc to cancel
+                        {compoundPinData.some(d=>d.inputs.length)&&
+                            <span style={{color:"#cba6f7",marginLeft:8}}>· click ◉ input pin to connect</span>}
                     </div>
                 )}
 
+                {/* ── Node context menu ── */}
                 {nodeMenu&&(()=>{
                     const node=nodes.find(n=>n.id===nodeMenu.nodeId);
                     return(
@@ -763,7 +1048,6 @@ function Workspace({
                                 {node?.type!=="JUNCTION"&&<div style={MN.item} onMouseDown={handleDuplicateNode}>⧉ Duplicate</div>}
                                 {selectedNodes.length>=2&&<div style={MN.item} onMouseDown={()=>{setRegionPrompt({nodeIds:[...selectedNodes],x:nodeMenu.x,y:nodeMenu.y});setNodeMenu(null);}}>⬜ Group region</div>}
                                 {(()=>{
-                                    // Show "Join" when selection has exactly 1 circuit + ≥1 switch or LED
                                     const selNs=nodes.filter(n=>selectedNodes.includes(n.id));
                                     const hasCircuit=selNs.some(n=>n.type!=='SWITCH'&&n.type!=='LED'&&n.type!=='JUNCTION'&&n.type!=='CLOCK'&&selectedNodes.includes(n.id));
                                     const hasSWorLED=selNs.some(n=>n.type==='SWITCH'||n.type==='LED');
@@ -791,6 +1075,53 @@ function Workspace({
                         </div>
                     );
                 })()}
+
+                {/* ── Region context menu (right-click the region label) ── */}
+                {regionMenu&&(()=>{
+                    const region=(regions||[]).find(r=>r.id===regionMenu.regionId);
+                    if(!region)return null;
+                    const regionNodes=nodesRef.current.filter(n=>region.nodeIds.includes(n.id));
+                    const switches=regionNodes.filter(n=>n.type==='SWITCH');
+                    const leds=regionNodes.filter(n=>n.type==='LED');
+                    const canCompound=switches.length>0||leds.length>0;
+                    return(
+                        <div style={{position:"fixed",left:regionMenu.x,top:regionMenu.y,background:"#1e1e2e",border:"1px solid #45475a",borderRadius:8,padding:6,minWidth:200,boxShadow:"0 4px 20px rgba(0,0,0,0.5)",zIndex:2000,display:"flex",flexDirection:"column",gap:2}}
+                            onClick={e=>e.stopPropagation()} onMouseDown={e=>e.stopPropagation()}>
+                            <div style={MN.hdr}>{region.label}</div>
+
+                            {!region.isCompound&&canCompound&&(
+                                <div style={{...MN.item,color:"#cba6f7"}} onMouseDown={()=>handleMakeCompound(regionMenu.regionId)}>
+                                    ⬡ Make Compound
+                                    <span style={{fontSize:10,color:"#6c7086",marginLeft:6}}>
+                                        {switches.length} in · {leds.length} out
+                                    </span>
+                                </div>
+                            )}
+                            {!region.isCompound&&!canCompound&&(
+                                <div style={{...MN.item,color:"#585b70",cursor:"default",fontSize:12,lineHeight:"1.5"}}>
+                                    ⬡ Make Compound<br/>
+                                    <span style={{fontSize:10}}>Region needs switches or LEDs</span>
+                                </div>
+                            )}
+                            {region.isCompound&&(
+                                <>
+                                    <div style={{padding:"3px 12px",fontSize:11,color:"#a6adc8",userSelect:"none"}}>
+                                        {(region.inputNodeIds||[]).length} input · {(region.outputNodeIds||[]).length} output pins
+                                    </div>
+                                    <div style={MN.item} onMouseDown={()=>handleRemoveCompound(regionMenu.regionId)}>
+                                        ↩ Remove Compound
+                                    </div>
+                                </>
+                            )}
+
+                            <div style={{height:1,background:"#313244",margin:"3px 0"}}/>
+                            <div style={{...MN.item,color:"#f38ba8"}} onMouseDown={()=>{
+                                if(setRegions)setRegions(prev=>prev.filter(r=>r.id!==regionMenu.regionId));
+                                setRegionMenu(null);
+                            }}>🗑️ Delete Region</div>
+                        </div>
+                    );
+                })()}
             </div>
 
             {pendingTypes?.length>0&&(
@@ -810,11 +1141,11 @@ function Workspace({
                     <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"#1a1a2a",color:"#89b4fa",fontSize:11,fontWeight:600,padding:"6px 14px",borderRadius:6,border:"1px solid rgba(137,180,250,0.3)",pointerEvents:"none",zIndex:51,display:"flex",alignItems:"center",gap:8}}>
                         <span style={{background:"rgba(137,180,250,0.15)",borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>{pendingTypes.length}</span>
                         {pendingTypes.length===1?pendingTypes[0]:`nodes (${pendingTypes.join(", ")})`} · click to place · Esc to cancel
-                    </div>
+                    </div> 
                 </>
             )}
         </div>
-    );
+    ); 
 }
 
 const MN={

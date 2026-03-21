@@ -142,7 +142,7 @@ export function propagate(nodes, wires) {
     const result = nodes.map(orig => {
         const u = nodeMap.get(orig.id);
         if (!u || u === orig) return orig;
-        if (u.value !== orig.value
+        if (u.value !== orig.value 
             || !arrEq(u.outputs, orig.outputs)
             || !internalStateEq(u.internalState, orig.internalState)) {
             dirty = true;

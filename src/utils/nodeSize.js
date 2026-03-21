@@ -9,9 +9,9 @@ const LABEL_PAD   = 44;  // left + right padding around label text
 export function getNodeSize(type, inputCount, outputCount) {
     const isIO = type === "SWITCH" || type === "LED";
     if (isIO) return { width: 28, height: 28 };
-
+ 
     const maxPins  = Math.max(inputCount, outputCount, 1);
-    const textW    = type.length * CHAR_WIDTH + LABEL_PAD;
+    const textW    = type.length * CHAR_WIDTH + LABEL_PAD; 
     const pinH     = maxPins * PIN_SPACING + PIN_MARGIN * 2;
     const width    = Math.max(textW, 60);
     const height   = Math.max(MIN_HEIGHT, pinH);

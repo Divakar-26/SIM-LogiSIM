@@ -1,16 +1,15 @@
 // App.jsx
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Sidebar from './components/Sidebar/Sidebar.jsx'
 import Workspace from './components/Workspace/Workspace.jsx'
 import { loadSavedComponents, registerComponent, customComponentRegistry } from "./configs/customComponents";
-import { SettingsProvider } from "./configs/SettingsContext.js";
+import { SettingsProvider, useSettings } from "./configs/SettingsContext.js";
 import SettingsPanel from "./components/Workspace/SettingsPanel";
 
-loadSavedComponents();
 
 let _uid = 100;
 const uid = () => ++_uid;
-
+ 
 const makePlayground = (name = "Playground 1") => ({
   id: uid(),
   name,
@@ -29,14 +28,14 @@ function NameModal({ title, defaultValue = "", placeholder, onConfirm, onCancel,
   return (
     <div style={S.overlay} onClick={onCancel}>
       <div style={S.modal} onClick={e => e.stopPropagation()}>
-        <h2 style={{ margin: 0, fontSize: 15, color: "#cdd6f4" }}>{title}</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: "var(--primary-light)", fontWeight: "900", textTransform: "uppercase", letterSpacing: "0.08em" }}>{title}</h2>
         <input autoFocus value={val}
           onChange={e => setVal(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && val.trim()) onConfirm(val.trim()); if (e.key === "Escape") onCancel(); }}
           placeholder={placeholder} style={S.input} />
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button onClick={onCancel} style={S.btnCancel}>Cancel</button>
-          <button onClick={() => val.trim() && onConfirm(val.trim())} style={S.btnPrimary}>{confirmLabel}</button>
+          <button onClick={onCancel} style={S.btnCancel} onMouseEnter={e => {e.target.style.transform="translate(-2px, -2px)"; e.target.style.boxShadow="6px 6px 0 rgba(0,0,0,0.4)"}} onMouseLeave={e => {e.target.style.transform="none"; e.target.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"}}>Cancel</button>
+          <button onClick={() => val.trim() && onConfirm(val.trim())} style={S.btnPrimary} onMouseEnter={e => {e.target.style.transform="translate(-2px, -2px)"; e.target.style.boxShadow="6px 6px 0 rgba(0,0,0,0.4)"}} onMouseLeave={e => {e.target.style.transform="none"; e.target.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"}}>{confirmLabel}</button>
         </div>
       </div>
     </div>
@@ -48,10 +47,10 @@ function ConfirmModal({ message, onConfirm, onCancel, confirmLabel = "Yes", dang
   return (
     <div style={S.overlay} onClick={onCancel}>
       <div style={{ ...S.modal, maxWidth: 320 }} onClick={e => e.stopPropagation()}>
-        <p style={{ margin: 0, fontSize: 13, color: "#a6adc8", lineHeight: 1.6 }}>{message}</p>
+        <p style={{ margin: 0, fontSize: 14, color: "var(--primary-fg)", lineHeight: 1.8 }}>{message}</p>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button onClick={onCancel} style={S.btnCancel}>Cancel</button>
-          <button onClick={onConfirm} style={danger ? S.btnDanger : S.btnPrimary}>{confirmLabel}</button>
+          <button onClick={onCancel} style={S.btnCancel} onMouseEnter={e => {e.target.style.transform="translate(-2px, -2px)"; e.target.style.boxShadow="6px 6px 0 rgba(0,0,0,0.4)"}} onMouseLeave={e => {e.target.style.transform="none"; e.target.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"}}>Cancel</button>
+          <button onClick={onConfirm} style={danger ? S.btnDanger : S.btnPrimary} onMouseEnter={e => {e.target.style.transform="translate(-2px, -2px)"; e.target.style.boxShadow="6px 6px 0 rgba(0,0,0,0.4)"}} onMouseLeave={e => {e.target.style.transform="none"; e.target.style.boxShadow="4px 4px 0 rgba(0,0,0,0.3)"}}>{confirmLabel}</button>
         </div>
       </div>
     </div>
@@ -70,8 +69,8 @@ function TabBar({ tabs, activeId, onSelect, onAdd, onRename, onClose, onMiddleCl
     <>
       <div style={{
         display: "flex", alignItems: "stretch",
-        background: "#13131f", borderBottom: "1px solid #252535",
-        height: 34, flexShrink: 0, overflowX: "auto", overflowY: "hidden",
+        background: "var(--secondary-bg)", borderBottom: "3px solid #000",
+        height: 40, flexShrink: 0, overflowX: "auto", overflowY: "hidden",
       }}
         onClick={closeMenu}
       >
@@ -90,30 +89,32 @@ function TabBar({ tabs, activeId, onSelect, onAdd, onRename, onClose, onMiddleCl
               title="Right-click to rename · Middle-click to close"
               style={{
                 display: "flex", alignItems: "center", gap: 5,
-                padding: "0 10px 0 13px",
+                padding: "0 12px 0 15px",
                 minWidth: 90, maxWidth: 170,
                 cursor: "pointer", flexShrink: 0,
-                background: active ? "#1e1e2e" : "transparent",
-                borderRight: "1px solid #1a1a28",
-                borderBottom: active ? "2px solid #89b4fa" : "2px solid transparent",
+                background: active ? "var(--primary-light)" : "var(--primary-bg)",
+                borderRight: "2px solid #000",
+                borderBottom: active ? "3px solid var(--primary-dark)" : "3px solid transparent",
                 userSelect: "none",
+                fontWeight: 700,
               }}
             >
               <span style={{
                 flex: 1, overflow: "hidden", textOverflow: "ellipsis",
-                whiteSpace: "nowrap", fontSize: 11,
-                color: active ? "#cdd6f4" : "#585b70",
-                fontWeight: active ? 600 : 400,
+                whiteSpace: "nowrap", fontSize: 12,
+                color: active ? "#000" : "var(--primary-fg)",
+                fontWeight: active ? 900 : 700,
+                textTransform: "uppercase",
               }}>
-                {tab.dirty ? <span style={{ color: "#f9e2af", marginRight: 2 }}>*</span> : null}
+                {tab.dirty ? <span style={{ color: "var(--primary-dark)", marginRight: 2, fontSize: 14 }}>●</span> : null}
                 {tab.name}
               </span>
               {tabs.length > 1 && (
                 <span
                   onClick={e => { e.stopPropagation(); closeMenu(); onClose(tab.id); }}
-                  style={{ color: "#313244", fontSize: 13, lineHeight: 1, padding: "1px 1px", borderRadius: 3, flexShrink: 0 }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#f38ba8"}
-                  onMouseLeave={e => e.currentTarget.style.color = "#313244"}
+                  style={{ color: active ? "#000" : "var(--primary-fg)", fontSize: 14, lineHeight: 1, padding: "1px 1px", borderRadius: 0, flexShrink: 0, cursor: "pointer", fontWeight: 900 }}
+                  onMouseEnter={e => e.currentTarget.style.color = "var(--primary-dark)"}
+                  onMouseLeave={e => e.currentTarget.style.color = active ? "#000" : "var(--primary-fg)"}
                 >✕</span>
               )}
             </div>
@@ -121,17 +122,17 @@ function TabBar({ tabs, activeId, onSelect, onAdd, onRename, onClose, onMiddleCl
         })}
 
         <button onClick={() => { onAdd(); closeMenu(); }} title="New playground"
-          style={{ background: "transparent", border: "none", color: "#313244", cursor: "pointer", fontSize: 18, padding: "0 10px", lineHeight: 1, flexShrink: 0 }}
-          onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
-          onMouseLeave={e => e.currentTarget.style.color = "#313244"}
+          style={{ background: "transparent", border: "none", color: "var(--primary-light)", cursor: "pointer", fontSize: 20, padding: "0 12px", lineHeight: 1, flexShrink: 0, fontWeight: 900 }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--primary-dark)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--primary-light)"}
         >+</button>
 
         <div style={{ flex: 1 }} />
 
         <button onClick={onSettings} title="Settings"
-          style={{ background: "transparent", border: "none", color: "#45475a", cursor: "pointer", fontSize: 15, padding: "0 12px", lineHeight: 1, flexShrink: 0, transition: "color 0.12s" }}
-          onMouseEnter={e => e.currentTarget.style.color = "#89b4fa"}
-          onMouseLeave={e => e.currentTarget.style.color = "#45475a"}
+          style={{ background: "transparent", border: "none", color: "var(--secondary-fg)", cursor: "pointer", fontSize: 16, padding: "0 12px", lineHeight: 1, flexShrink: 0, transition: "color 0.12s", fontWeight: 700 }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--primary-light)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--secondary-fg)"}
         >⚙</button>
       </div>
 
@@ -146,11 +147,11 @@ function TabBar({ tabs, activeId, onSelect, onAdd, onRename, onClose, onMiddleCl
             const tab = tabs.find(t => t.id === tabMenu.tabId);
             if (tab) onRename(tab.id, tab.name);
             closeMenu();
-          }}>✏️ Rename</div>
+          }} onMouseEnter={e => {e.target.style.background="var(--primary-dark)"; e.target.style.transform="translate(-2px, -2px)"; e.target.style.boxShadow="3px 3px 0 rgba(0,0,0,0.3)"}} onMouseLeave={e => {e.target.style.background="var(--secondary-fg)"; e.target.style.transform="none"; e.target.style.boxShadow="none"}}>✏️ RENAME</div>
           {tabs.length > 1 && (
-            <div style={{ ...S.menuItem, color: "#f38ba8" }} onClick={() => {
+            <div style={{ ...S.menuItem, background: "var(--primary-dark)" }} onClick={() => {
               onClose(tabMenu.tabId); closeMenu();
-            }}>✕ Close</div>
+            }} onMouseEnter={e => {e.target.style.background="var(--primary-dark)"; e.target.style.transform="translate(-2px, -2px)"; e.target.style.boxShadow="3px 3px 0 rgba(0,0,0,0.3)"}} onMouseLeave={e => {e.target.style.background="var(--primary-dark)"; e.target.style.transform="none"; e.target.style.boxShadow="none"}}>✕ CLOSE</div>
           )}
         </div>
       )}
@@ -485,15 +486,37 @@ function PlayBtn({ onClick, children }) {
 }
 
 const S = {
-  overlay:     { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3000 },
-  modal:       { background: "#1e1e2e", color: "#cdd6f4", borderRadius: 10, padding: "24px 28px", minWidth: 300, boxShadow: "0 8px 32px rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", gap: 12 },
-  contextMenu: { position: "fixed", background: "#1e1e2e", border: "1px solid #45475a", borderRadius: 8, padding: 6, minWidth: 160, boxShadow: "0 4px 20px rgba(0,0,0,0.5)", zIndex: 4000, display: "flex", flexDirection: "column", gap: 2 },
-  menuHeader:  { padding: "6px 10px", fontSize: 11, color: "#6c7086", borderBottom: "1px solid #313244", marginBottom: 4, fontWeight: "bold" },
-  menuItem:    { padding: "8px 12px", borderRadius: 5, cursor: "pointer", fontSize: 13, color: "#cdd6f4", userSelect: "none" },
-  input:       { padding: "8px 12px", borderRadius: 6, fontSize: 13, border: "1px solid #45475a", background: "#313244", color: "#cdd6f4", outline: "none", width: "100%", boxSizing: "border-box" },
-  btnCancel:   { padding: "7px 16px", borderRadius: 6, border: "1px solid #45475a", background: "transparent", color: "#cdd6f4", cursor: "pointer", fontSize: 13 },
-  btnPrimary:  { padding: "7px 16px", borderRadius: 6, border: "none", background: "#89b4fa", color: "#1e1e2e", fontWeight: "bold", cursor: "pointer", fontSize: 13 },
-  btnDanger:   { padding: "7px 16px", borderRadius: 6, border: "none", background: "#f38ba8", color: "#1e1e2e", fontWeight: "bold", cursor: "pointer", fontSize: 13 },
+  overlay:     { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3000 },
+  modal:       { background: "var(--secondary-bg)", color: "var(--primary-fg)", borderRadius: 0, padding: "24px 28px", minWidth: 300, border: "4px solid #000", boxShadow: "8px 8px 0 rgba(0,0,0,0.4)", display: "flex", flexDirection: "column", gap: 12, fontFamily: "'Courier New', monospace" },
+  contextMenu: { position: "fixed", background: "var(--secondary-bg)", border: "3px solid #000", borderRadius: 0, padding: 8, minWidth: 160, boxShadow: "6px 6px 0 rgba(0,0,0,0.4)", zIndex: 4000, display: "flex", flexDirection: "column", gap: 2, fontFamily: "'Courier New', monospace" },
+  menuHeader:  { padding: "8px 10px", fontSize: 12, color: "var(--primary-fg)", borderBottom: "2px solid #000", marginBottom: 4, fontWeight: "900", textTransform: "uppercase", letterSpacing: "0.08em" },
+  menuItem:    { padding: "10px 12px", borderRadius: 0, cursor: "pointer", fontSize: 12, color: "#000", userSelect: "none", background: "var(--secondary-fg)", fontWeight: "700", border: "2px solid #000", transition: "all 0.1s", textTransform: "uppercase" },
+  input:       { padding: "10px 12px", borderRadius: 0, fontSize: 13, border: "3px solid #000", background: "var(--primary-fg)", color: "#000", outline: "none", width: "100%", boxSizing: "border-box", fontWeight: "700", fontFamily: "'Courier New', monospace" },
+  btnCancel:   { padding: "10px 16px", borderRadius: 0, border: "3px solid #000", background: "var(--secondary-fg)", color: "#000", cursor: "pointer", fontSize: 12, fontWeight: "900", textTransform: "uppercase", letterSpacing: "0.08em", boxShadow: "4px 4px 0 rgba(0,0,0,0.3)", transition: "all 0.1s" },
+  btnPrimary:  { padding: "10px 16px", borderRadius: 0, border: "3px solid #000", background: "var(--primary-light)", color: "#000", fontWeight: "900", cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", boxShadow: "4px 4px 0 rgba(0,0,0,0.3)", transition: "all 0.1s" },
+  btnDanger:   { padding: "10px 16px", borderRadius: 0, border: "3px solid #000", background: "var(--primary-dark)", color: "#000", fontWeight: "900", cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", boxShadow: "4px 4px 0 rgba(0,0,0,0.3)", transition: "all 0.1s" },
 };
 
-export default App;
+// ── Theme Provider ───────────────────────────────────────────────────────────
+function ThemeProvider({ children }) {
+  const { settings } = useSettings();
+  
+  useEffect(() => {
+    const themeClass = `theme-${settings.theme}`;
+    document.documentElement.className = themeClass;
+  }, [settings.theme]);
+  
+  return children;
+}
+
+function AppWithTheme() {
+  return (
+    <SettingsProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </SettingsProvider>
+  );
+}
+
+export default AppWithTheme;
