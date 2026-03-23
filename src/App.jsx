@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar/Sidebar.jsx'
 import Workspace from './components/Workspace/Workspace.jsx'
 import { loadSavedComponents, registerComponent, customComponentRegistry } from "./configs/customComponents";
 import { SettingsProvider, useSettings } from "./configs/SettingsContext.js";
+import { UndoRedoProvider } from "./configs/UndoRedoContext.jsx";
 import SettingsPanel from "./components/Workspace/SettingsPanel";
 
 let _uid = 100;
@@ -534,11 +535,13 @@ function ThemeProvider({ children }) {
 
 function AppWithTheme() {
   return (
-    <SettingsProvider>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    </SettingsProvider>
+    <UndoRedoProvider>
+      <SettingsProvider>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </SettingsProvider>
+    </UndoRedoProvider>
   );
 }
 

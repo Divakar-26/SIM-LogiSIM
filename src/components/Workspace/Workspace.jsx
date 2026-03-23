@@ -5,6 +5,7 @@ import Node from "../Node";
 import Wire from "../Wire";
 import { getPinPosition } from "../../utils/pinPosition";
 import { getVisibleNodes, getVisibleWires } from "../../utils/viewportCulling";
+import { useHistoryState } from "../../hooks/useHistoryState";
 import { propagate } from "./propagate";
 import TruthTablePanel from "./TruthTablePanel";
 import ClockConfig from "./ClockConfig";
@@ -137,6 +138,8 @@ function Workspace({
     useEffect(()=>{wiresRef.current=wires;},[wires]);
     useEffect(()=>{nodesRef.current=nodes;},[nodes]);
     useEffect(()=>{regionsRef.current=regions;},[regions]);
+
+    const { saveSnapshot, handleUndo, handleRedo, canUndo, canRedo, pauseTracking, resumeTracking } = useHistoryState(nodes, setNodes, wires, setWires, regions, setRegions);
 
     const [camera,setCamera]                       = useState({x:0,y:0,zoom:1});
     const [viewportSize,setViewportSize]           = useState({w:window.innerWidth,h:window.innerHeight});
@@ -912,6 +915,9 @@ function Workspace({
                     <ToolBtn active={tool==="erase"}  onClick={()=>setTool("erase")}  title="Erase">✕</ToolBtn>
                     <div style={{width:1,height:22,background:"#2a2a3e",margin:"0 2px"}}/>
                     <ToolBtn active={false} onClick={fitAll} title="Fit all (F)">⛶</ToolBtn>
+                    <div style={{width:1,height:22,background:"#2a2a3e",margin:"0 2px"}}/>
+                    <ToolBtn active={false} onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{opacity:canUndo?1:0.5,cursor:canUndo?"pointer":"not-allowed"}}>↶</ToolBtn>
+                    <ToolBtn active={false} onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" style={{opacity:canRedo?1:0.5,cursor:canRedo?"pointer":"not-allowed"}}>↷</ToolBtn>
                 </div>
             )}
 
@@ -1060,6 +1066,9 @@ function Workspace({
                             onContextMenu={openNodeMenu}
                             eraseMode={tool==="erase"}
                             isLEDHovered={ledHoveredNodeId===node.id}
+                            pauseTracking={pauseTracking}
+                            resumeTracking={resumeTracking}
+                            saveSnapshot={saveSnapshot}
                         />
                     ))}
 

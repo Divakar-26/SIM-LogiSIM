@@ -27,7 +27,7 @@ const Node = memo(function Node({
     cameraRef,
     workspaceRef, updateNodePosition, onPinClick, onBitToggle,
     selected, onSelect, onContextMenu, cancelWire, eraseMode,
-    isLEDHovered,
+    isLEDHovered, pauseTracking, resumeTracking, saveSnapshot,
 }) {
     const dragStart  = useRef({x:0,y:0});
     const dragOffset = useRef({x:0,y:0});
@@ -60,6 +60,10 @@ const Node = memo(function Node({
         if (!dragging.current) {
             if (type==='SWITCH') updateNodePosition(id,x,y,'toggle');
             onSelect(id);
+        } else {
+            // Only save history if we actually dragged
+            resumeTracking && resumeTracking();
+            saveSnapshot && saveSnapshot("Moved node");
         }
         dragging.current=false;
         window.removeEventListener('mousemove',onMove);
@@ -71,7 +75,11 @@ const Node = memo(function Node({
         const mx=(e.clientX-rect.left-cam.x)/cam.zoom;
         const my=(e.clientY-rect.top -cam.y)/cam.zoom;
         const dx=mx-dragStart.current.x, dy=my-dragStart.current.y;
-        if (!dragging.current&&dx*dx+dy*dy>16) { dragging.current=true; cancelWire(); }
+        if (!dragging.current&&dx*dx+dy*dy>16) { 
+            dragging.current=true; 
+            cancelWire(); 
+            pauseTracking && pauseTracking();
+        }
         if (dragging.current) updateNodePosition(id,mx-dragOffset.current.x,my-dragOffset.current.y,null,selected);
     };
 
@@ -169,7 +177,10 @@ const Node = memo(function Node({
     prev.onPinClick         === next.onPinClick         &&
     prev.onSelect           === next.onSelect           &&
     prev.onContextMenu      === next.onContextMenu      &&
-    prev.cancelWire         === next.cancelWire
+    prev.cancelWire         === next.cancelWire         &&
+    prev.pauseTracking      === next.pauseTracking      &&
+    prev.resumeTracking     === next.resumeTracking     &&
+    prev.saveSnapshot       === next.saveSnapshot
 );
 
 export default Node;  
