@@ -193,6 +193,9 @@ function SettingsPanel({ onClose }) {
           <Row label="Snap to grid">
             <Toggle value={settings.snapToGrid} onChange={set("snapToGrid")} />
           </Row>
+          <Row label="Level of Detail" hint="Simplify nodes when zoomed out">
+            <Toggle value={settings.enableLOD} onChange={set("enableLOD")} />
+          </Row>
           <Row label="Wire style">
             <Select value={settings.wireStyle} onChange={set("wireStyle")}
               options={[{ value: "bezier", label: "BEZIER" }, { value: "straight", label: "STRAIGHT" }]}

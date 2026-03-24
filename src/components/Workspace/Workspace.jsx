@@ -128,12 +128,14 @@ function Workspace({
     const isPanningRef   = useRef(false);
     const panStartRef    = useRef({x:0,y:0});
     const activeWireRef  = useRef(null);
+    const activeWireWaypointsRef = useRef([]);
     const wiresRef       = useRef(wires);
     const nodesRef       = useRef(nodes);
     const regionsRef     = useRef(regions);
     const selectedRef    = useRef([]);
     const settingsRef    = useRef(null);
     const toolRef        = useRef("select");
+    const selectionBoxStartCtrlRef = useRef(false);
 
     useEffect(()=>{wiresRef.current=wires;},[wires]);
     useEffect(()=>{nodesRef.current=nodes;},[nodes]);
@@ -174,6 +176,7 @@ function Workspace({
     }, []);
 
     useEffect(()=>{activeWireRef.current=activeWire;},[activeWire]);
+    useEffect(()=>{activeWireWaypointsRef.current=activeWireWaypoints;},[activeWireWaypoints]);
     useEffect(()=>{selectedRef.current=selectedNodes;});
     useEffect(()=>{settingsRef.current=settings;},[settings]);
     useEffect(()=>{toolRef.current=tool;},[tool]);
@@ -212,11 +215,17 @@ function Workspace({
     },[nodes,settings]);
 
     const visibleNodes = useMemo(()=>
-        nodes.filter(n => !compoundHiddenIds.has(n.id) && 
-            ((n.x * camera.zoom) + camera.x + 80 * camera.zoom > 0 &&
-             (n.x * camera.zoom) + camera.x < viewportSize.w &&
-             (n.y * camera.zoom) + camera.y + 40 * camera.zoom > 0 &&
-             (n.y * camera.zoom) + camera.y < viewportSize.h))
+        nodes.filter(n => {
+            if(compoundHiddenIds.has(n.id)) return false;
+            const customComp = customComponentRegistry[n.type];
+            const cfg = gateConfig[n.type] || {inputs: customComp?.inputPinMap?.length ?? 2, outputs: customComp?.outputPinMap?.length ?? 1};
+            const {width, height} = n.type==='JUNCTION' ? {width:10, height:10} : getNodeSize(n.type, cfg.inputs, cfg.outputs);
+            const screenX = (n.x * camera.zoom) + camera.x;
+            const screenY = (n.y * camera.zoom) + camera.y;
+            const screenW = width * camera.zoom;
+            const screenH = height * camera.zoom;
+            return screenX + screenW > 0 && screenX < viewportSize.w && screenY + screenH > 0 && screenY < viewportSize.h;
+        })
     ,[nodes, compoundHiddenIds, camera, viewportSize]);
 
     const visibleWires = useMemo(()=>{
@@ -388,41 +397,76 @@ function Workspace({
             NOT: { inputs: 1, outputs: 1 },
         };
 
-        // Auto-chain circuits left-to-right
+        // Auto-chain circuits left-to-right (connect to unoccupied input pins)
         for (let i = 0; i < circuits.length - 1; i++) {
             const from = circuits[i];
             const to = circuits[i + 1];
-            const cfg = gateConfig[from.type] || { outputs: 1 };
+            const fromCfg = gateConfig[from.type] || { outputs: 1 };
+            const toCfg = gateConfig[to.type] || { inputs: 2 };
             
-            if (cfg.outputs > 0) {
+            // Find occupied inputs on target circuit
+            const occupiedInputs = new Set(
+                currentWires
+                    .filter(w => w.to.nodeId === to.id)
+                    .map(w => w.to.index)
+            );
+            
+            // Find first unoccupied input
+            let unoccupiedInputIndex = -1;
+            for (let j = 0; j < toCfg.inputs; j++) {
+                if (!occupiedInputs.has(j)) {
+                    unoccupiedInputIndex = j;
+                    break;
+                }
+            }
+            
+            if (unoccupiedInputIndex >= 0 && fromCfg.outputs > 0) {
                 const already = currentWires.some(w => 
                     w.from.nodeId === from.id && w.from.index === 0 &&
-                    w.to.nodeId === to.id && w.to.index === 0
+                    w.to.nodeId === to.id && w.to.index === unoccupiedInputIndex
                 );
                 if (!already) {
                     newWires.push({
                         id: wid(),
-                        from: {nodeId: from.id, index: 0, total: cfg.outputs},
-                        to: {nodeId: to.id, index: 0, total: 2},
+                        from: {nodeId: from.id, index: 0, total: fromCfg.outputs},
+                        to: {nodeId: to.id, index: unoccupiedInputIndex, total: toCfg.inputs},
                     });
                 }
             }
         }
 
-        // Connect switches to first circuit input
+        // Connect switches to first circuit input (only to unoccupied pins)
         if (circuits.length > 0) {
             const firstCircuit = circuits[0];
             const cfg = gateConfig[firstCircuit.type] || { inputs: 2 };
+            
+            // Find which input pins are already occupied
+            const occupiedInputs = new Set(
+                currentWires
+                    .filter(w => w.to.nodeId === firstCircuit.id)
+                    .map(w => w.to.index)
+            );
+            
+            // Find available input pin indices
+            const availableInputs = [];
+            for (let i = 0; i < cfg.inputs; i++) {
+                if (!occupiedInputs.has(i)) {
+                    availableInputs.push(i);
+                }
+            }
+            
+            // Connect switches only to available inputs
             switches.forEach((sw, i) => {
-                if (i >= cfg.inputs) return;
+                if (i >= availableInputs.length) return;
+                const inputIndex = availableInputs[i];
                 const already = currentWires.some(w => 
-                    w.from.nodeId === sw.id && w.to.nodeId === firstCircuit.id && w.to.index === i
+                    w.from.nodeId === sw.id && w.to.nodeId === firstCircuit.id && w.to.index === inputIndex
                 );
                 if (!already) {
                     newWires.push({
                         id: wid(),
                         from: {nodeId: sw.id, index: 0, total: 1},
-                        to: {nodeId: firstCircuit.id, index: i, total: cfg.inputs},
+                        to: {nodeId: firstCircuit.id, index: inputIndex, total: cfg.inputs},
                     });
                 }
             });
@@ -561,12 +605,12 @@ function Workspace({
                     id:wid(),
                     from:{nodeId:fromPin.nodeId,index:fromPin.index,total:fromPin.total},
                     to:{nodeId:toPin.nodeId,index:toPin.index,total:toPin.total},
-                    waypoints:activeWireWaypoints.length>0?[...activeWireWaypoints]:undefined,
+                    waypoints:activeWireWaypointsRef.current.length>0?[...activeWireWaypointsRef.current]:undefined,
                 }]);
             }
         }
         setActiveWire(null);setActiveWireWaypoints([]);
-    },[activeWireWaypoints,quickConnectMode,handleQuickConnectPin]);
+    },[quickConnectMode,handleQuickConnectPin]);
 
     const eraseNode = useCallback((id)=>{
         setNodes(prev=>prev.filter(n=>n.id!==id));
@@ -590,7 +634,21 @@ function Workspace({
         }
     },[]);
 
-    const onSelectNode = useCallback((id)=>{setSelectionBox(null);setSelectedNodes([id]);},[]);
+    const onSelectNode = useCallback((id, e)=>{
+        setSelectionBox(null);
+        const isMultiSelect = e?.ctrlKey || e?.metaKey; // Ctrl on Windows/Linux, Cmd on Mac
+        if(isMultiSelect){
+            setSelectedNodes(prev=>{
+                if(prev.includes(id)){
+                    return prev.filter(nid=>nid!==id); // Deselect if already selected
+                } else {
+                    return [...prev, id]; // Add to selection
+                }
+            });
+        } else {
+            setSelectedNodes([id]); // Replace selection
+        }
+    },[]);
 
     const openNodeMenu = useCallback((e,id)=>{
         if(toolRef.current==="erase")return;
@@ -853,14 +911,19 @@ function Workspace({
         if(setRegions)setRegions(prev=>[...prev,{id:wid(),label:label.trim(),nodeIds:regionPrompt.nodeIds}]);
         setRegionPrompt(null);
     };
-    const computeRegionBounds=(nodeIds)=>{
-        const sel=nodesRef.current.filter(n=>nodeIds.includes(n.id));
-        if(!sel.length)return null;
-        const xs=sel.map(n=>n.x),ys=sel.map(n=>n.y);
-        const xe=sel.map(n=>{const cfg=gateConfig[n.type];const{width}=getNodeSize(n.type,cfg?.inputs??2,cfg?.outputs??1);return n.x+width;});
-        const ye=sel.map(n=>{const cfg=gateConfig[n.type];const{height}=getNodeSize(n.type,cfg?.inputs??2,cfg?.outputs??1);return n.y+height;});
-        return{x:Math.min(...xs)-REGION_PAD,y:Math.min(...ys)-REGION_PAD,w:Math.max(...xe)-Math.min(...xs)+REGION_PAD*2,h:Math.max(...ye)-Math.min(...ys)+REGION_PAD*2};
-    };
+    // Memoized bounds calculation for all regions
+    const regionBoundsMap = useMemo(() => {
+        const map = new Map();
+        (regions || []).forEach(region => {
+            const sel = nodes.filter(n => region.nodeIds.includes(n.id));
+            if (!sel.length) return;
+            const xs = sel.map(n => n.x), ys = sel.map(n => n.y);
+            const xe = sel.map(n => { const cfg = gateConfig[n.type]; const { width } = getNodeSize(n.type, cfg?.inputs ?? 2, cfg?.outputs ?? 1); return n.x + width; });
+            const ye = sel.map(n => { const cfg = gateConfig[n.type]; const { height } = getNodeSize(n.type, cfg?.inputs ?? 2, cfg?.outputs ?? 1); return n.y + height; });
+            map.set(region.id, { x: Math.min(...xs) - REGION_PAD, y: Math.min(...ys) - REGION_PAD, w: Math.max(...xe) - Math.min(...xs) + REGION_PAD * 2, h: Math.max(...ye) - Math.min(...ys) + REGION_PAD * 2 });
+        });
+        return map;
+    }, [regions, nodes]);
 
     
     const handleDeleteNode=()=>{
@@ -1028,8 +1091,11 @@ function Workspace({
             }
         }
         if(e.button===0){
-            cancelWire();setNodeMenu(null);setRegionMenu(null);setClockConfig(null);setSelectedNodes([]);
+            cancelWire();setNodeMenu(null);setRegionMenu(null);setClockConfig(null);
+            const isMultiSelect = e.ctrlKey || e.metaKey;
+            if(!isMultiSelect)setSelectedNodes([]); // Only clear selection if NOT multiselecting
             if(tool==="select"){
+                selectionBoxStartCtrlRef.current = isMultiSelect; // Remember if Ctrl was held
                 setSelectionBox({startX:sx,startY:sy,endX:sx,endY:sy});
                 panStartRef.current={x:sx,y:sy}; // Initialize for pan-while-selecting
             }
@@ -1070,7 +1136,14 @@ function Workspace({
             const minY=Math.min(box.startY,box.endY),maxY=Math.max(box.startY,box.endY);
             if(maxX-minX>6&&maxY-minY>6){
                 const wMin=screenToWorld(minX,minY),wMax=screenToWorld(maxX,maxY);
-                setSelectedNodes(nodes.filter(n=>n.x>=wMin.x&&n.x<=wMax.x&&n.y>=wMin.y&&n.y<=wMax.y).map(n=>n.id));
+                const boxSelectedIds=nodes.filter(n=>n.x>=wMin.x&&n.x<=wMax.x&&n.y>=wMin.y&&n.y<=wMax.y).map(n=>n.id);
+                // Check if Ctrl was held during the drag
+                const wasMultiSelect = selectionBoxStartCtrlRef.current;
+                if(wasMultiSelect){
+                    setSelectedNodes(prev=>[...new Set([...prev,...boxSelectedIds])]); // Add to selection
+                } else {
+                    setSelectedNodes(boxSelectedIds); // Replace selection
+                }
             }
             setSelectionBox(null);
         }
@@ -1165,14 +1238,7 @@ function Workspace({
         return (regions||[])
             .filter(r=>r.isCompound)
             .map(region=>{
-                const b = (() => {
-                    const sel = nodes.filter(n=>region.nodeIds.includes(n.id));
-                    if(!sel.length) return null;
-                    const xs=sel.map(n=>n.x),ys=sel.map(n=>n.y);
-                    const xe=sel.map(n=>{const cfg=gateConfig[n.type];const{width}=getNodeSize(n.type,cfg?.inputs??2,cfg?.outputs??1);return n.x+width;});
-                    const ye=sel.map(n=>{const cfg=gateConfig[n.type];const{height}=getNodeSize(n.type,cfg?.inputs??2,cfg?.outputs??1);return n.y+height;});
-                    return{x:Math.min(...xs)-REGION_PAD,y:Math.min(...ys)-REGION_PAD,w:Math.max(...xe)-Math.min(...xs)+REGION_PAD*2,h:Math.max(...ye)-Math.min(...ys)+REGION_PAD*2};
-                })();
+                const b = regionBoundsMap.get(region.id);
                 if(!b) return null;
 
                 const inEntries  = region.inputWireTargets  || [];
@@ -1262,7 +1328,7 @@ function Workspace({
                 }}>
                     {}
                     {(regions||[]).map(region=>{
-                        const b=computeRegionBounds(region.nodeIds);
+                        const b=regionBoundsMap.get(region.id);
                         if(!b)return null;
                         const isCompound=!!region.isCompound;
                         const isLEDDecimal=!!region.isLEDDecimal;
@@ -1375,7 +1441,7 @@ function Workspace({
                             onPinClick={handlePinClick}
                             onBitToggle={handleBitToggle}
                             selected={selectedSet.has(node.id)}
-                            onSelect={tool==="erase"?eraseNode:onSelectNode}
+                            onSelect={tool==="erase"?eraseNode:(id, e)=>onSelectNode(id, e)}
                             cancelWire={cancelWire}
                             onContextMenu={openNodeMenu}
                             eraseMode={tool==="erase"}
@@ -1383,6 +1449,7 @@ function Workspace({
                             pauseTracking={pauseTracking}
                             resumeTracking={resumeTracking}
                             saveSnapshot={saveSnapshot}
+                            enableLOD={settings.enableLOD}
                         />
                     ))}
 

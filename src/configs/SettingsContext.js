@@ -4,6 +4,7 @@ export const defaultSettings = {
   showToolbar:        true,
   showGrid:           true,
   snapToGrid:         true,
+  enableLOD:          true,
   wireStyle:          "bezier",
   zoomSensitivity:    1.0,
   wireActiveColor:    "#ff4444",
